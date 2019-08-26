@@ -1,0 +1,88 @@
+{
+  "name": "tsnode-core",
+  "version": "0.0.1",
+  "description": "nodejs express typescript",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "./node_modules/.bin/ts-node -r dotenv/config ./example/index.ts dotenv_config_path=./example/.env",
+    "dev": "nodemon --exec ./node_modules/.bin/ts-node -- ./index.ts",
+    "test": "export PORT=3000 && ./node_modules/.bin/ts-node -- ./test/test.ts | tap-spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pawskal/tsnode-express.git#v0.1.2"
+  },
+  "keywords": [
+    "nodejs",
+    "node-js",
+    "express",
+    "typescript",
+    "type-script",
+    "decorators",
+    "decorator",
+    "IOC",
+    "ioc",
+    "DI",
+    "di",
+    "dependency-injection",
+    "dependency-injections",
+    "dependency injection",
+    "dependency injections",
+    "Dependency Injection",
+    "Dependency Injections",
+    "express typescript decorators",
+    "express type-script decorators",
+    "express type-script",
+    "express typescript",
+    "express decorators"
+  ],
+  "author": "pavel.ivanov <ipawskal@gmail.com> (https://github.com/pawskal)",
+  "contributors": [
+    "BakridLigaz <ligaz2403@yandex.ru>",
+    "Sergiy <lyshchenko.sergiy@gmail.com>"
+  ],
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pawskal/tsnode-express.git/issues"
+  },
+  "homepage": "https://github.com/pawskal/tsnode-express#readme",
+  "dependencies": {
+    "@types/express": "^4.16.0",
+    "@types/node": "^9.4.7",
+    "@types/reflect-metadata": "^0.1.0",
+    "dotenv": "^7.0.0",
+    "express": "^4.16.3",
+    "nodejs-lite-logger": "0.0.13",
+    "redis": "^2.8.0",
+    "reflect-metadata": "^0.1.13",
+    "supertest": "^4.0.2",
+    "ts-http-errors": "^1.0.0",
+    "ts-node": "^5.0.1",
+    "typescript": "^3.3.3333",
+    "uuidv4": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.5",
+    "@types/jsonwebtoken": "^7.2.7",
+    "@types/redis": "^2.8.10",
+    "@types/request": "^2.47.0",
+    "@types/request-promise-native": "^1.0.14",
+    "@types/supertest": "^2.0.8",
+    "@types/tape": "^4.2.32",
+    "@types/uuidv4": "^2.0.0",
+    "cors": "^2.8.5",
+    "jsonwebtoken": "^8.2.1",
+    "nodemon": "^1.17.1",
+    "request": "^2.87.0",
+    "request-promise-native": "^1.0.5",
+    "tap-spec": "^5.0.0",
+    "tape": "^4.9.0"
+  },
+  "directories": {
+    "example": "example",
+    "lib": "lib",
+    "test": "test"
+  }
+}
