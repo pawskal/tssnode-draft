@@ -1,8 +1,9 @@
-import { Request, Response, NextFunction, RouterOptions } from 'express';
-import { PathParams, IRouterHandler, IRouterMatcher, ApplicationRequestHandler, RequestHandler } from 'express-serve-static-core';
-import { Type } from '../../tsnode-core/lib/interfaces';
-import { HttpController, RouteMeta } from './helpers';
+import { NextFunction, Request, Response, RouterOptions } from 'express';
+import { ApplicationRequestHandler, IRouterHandler, IRouterMatcher, PathParams, RequestHandler } from 'express-serve-static-core';
 import { IncomingHttpHeaders } from 'http';
+import { Type } from '../../tsnode-core/lib/interfaces';
+import { HttpController } from './core/httpController';
+import { RouteMeta } from './serviceProviders/routeMeta';
 
 export enum HttpMethods {
   GET = 'get',
@@ -11,10 +12,10 @@ export enum HttpMethods {
   PUT = 'put',
   DELETE = 'delete',
   PATCH = 'patch',
-  OPTIONS = 'options'
+  OPTIONS = 'options',
 }
 
-export type IRequestParams<B = {}, Q = {}, P = {}, T = {}> =  T & {
+export type IRequestParams<B = {}, Q = {}, P = {}> = {
   body: B;
   // [s: string]: keyof T;
   params: P;
@@ -22,14 +23,14 @@ export type IRequestParams<B = {}, Q = {}, P = {}, T = {}> =  T & {
   headers: IncomingHttpHeaders;
 };
 
-export type IRequest<B = {}, Q = {}, P = {}, T = {}> = IRequestParams<B, Q, P, T> & Request
+export type IRequest<B = {}, Q = {}, P = {}> = IRequestParams<B, Q, P> & Request;
 
-export interface IGuard {
-   verify<T>(req: IRequest<T>, options: RouteMeta): any
+export interface IGuard<K = unknown> {
+   verify<T>(req: IRequest<T>, options: RouteMeta): K;
 }
 
 export interface IUseGuard {
-  useGuard?: boolean
+  useGuard?: boolean;
 }
 
 export interface IProviderDefinition<T> {
@@ -46,14 +47,20 @@ export interface IAuthDefinition<T> {
   options: T;
 }
 
-export interface IControllerDefinition<T extends IGuard = never> {
+export interface IGuardDefinition<T extends IGuard, K = unknown> {
+  guard: Type<T>;
+  options?: K;
+}
+
+export interface IRequestArguments extends IRequestParams {}
+
+export interface IControllerDefinition {
   basePath: PathParams;
   routes: Map<string, IRoutes>;
-  guard?: Type<T>;
   definition: Type<HttpController>;
 }
 
-export type IRequestOptions<T> = T & IUseGuard
+export type IRequestOptions<T> = T & IUseGuard;
 
 export interface IMethod<T = unknown> extends IUseGuard {
   name: string;
@@ -67,7 +74,6 @@ export type IRoutes = {
   [x in HttpMethods]?: IMethod;
 };
 
-
 export interface IOnInit {
   onInit?(): void;
 }
@@ -77,9 +83,14 @@ export interface IOnDestroy {
 }
 
 export interface IPropertyDescriptor extends PropertyDecorator {
-  value: (options: IRequestParams) => any
+  value: (options: IRequestParams) => any;
 }
 
-export type TypeFunction<T> = (target: Type<T>) => void
+export interface IControllerResolver<T extends IGuard, K = unknown> {
+  controller: IControllerDefinition;
+  guard: IGuardDefinition<T, K>;
+}
 
-export type RouteFunction<T> = (target: Type<T>, fname: string, descriptor: IPropertyDescriptor) => void
+export type TypeFunction<T> = (target: Type<T>) => void;
+
+export type RouteFunction<T> = (target: Type<T>, fname: string, descriptor: IPropertyDescriptor) => void;

@@ -12,6 +12,8 @@ export interface IPlugin {
 export enum ResolveTypes {
   SINGLETON,
   SCOPED,
+  WEAK_SCOPED,
+  WEAK
 }
 
 export type SetConfig = (config: ConfigProvider) => Promise<any> | any

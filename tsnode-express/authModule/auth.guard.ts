@@ -4,7 +4,7 @@ import { Injectable, ResolveTypes, ConfigProvider } from "../../tsnode-core/lib"
 import { IGuard } from "../httpPlugin/interfaces";
 import { IRequest } from "../httpPlugin";
 import { AuthService } from ".";
-import { RouteMeta } from '../httpPlugin/helpers';
+import { RouteMeta } from '../httpPlugin/core';
 
 @Injectable(ResolveTypes.SCOPED)
 export class AuthGuard implements IGuard { 
@@ -13,9 +13,9 @@ export class AuthGuard implements IGuard {
         const token = headers['authorization'] || '';
         const data: any = jwt.verify(token, this.config.secret)
         const user = this.authService.getUser(data.name)
-        if(!meta.roles.includes(user.role)) {
-          throw new ForbiddenError(`Forbidden access for ${meta.fullPath}`)
-        }
+        // if(!meta.roles.includes(user.role)) {
+        //   throw new ForbiddenError(`Forbidden access for ${meta.fullPath}`)
+        // }
         return Promise.resolve(user);
     }
 }

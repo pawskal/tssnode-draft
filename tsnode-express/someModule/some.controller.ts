@@ -1,24 +1,29 @@
-import { Injectable } from "../../tsnode-core/lib";
-import { Controller, Get, Post, Guard } from '../httpPlugin/decorators';
+import { Injectable } from '../../tsnode-core/lib';
+import { Controller, Get, Guard, Post } from '../httpPlugin/decorators';
 
 // import { SomeService } from './some.service';
-import { BadRequestError } from "ts-http-errors";
+import { BadRequestError } from 'ts-http-errors';
 import uuidv4 from 'uuidv4';
-import { IRequest, IResponse, IGuard, IRequestParams } from "../httpPlugin/interfaces";
-import { ResolveTypes } from "../../tsnode-core/lib/interfaces";
-import { SomeService } from ".";
-import { HttpController, RouteMeta } from "../httpPlugin/helpers";
-import { User } from "../authModule/auth.service";
+import {SomeService} from './some.service';
+import { ResolveTypes } from '../../tsnode-core/lib/interfaces';
+import { User } from '../authModule/auth.service';
+import { HttpController, RouteMeta } from '../httpPlugin/core';
+import { IGuard, IRequest, IRequestParams, IResponse } from '../httpPlugin/interfaces';
+import { HeadersProvider } from '../httpPlugin/serviceProviders/headersProvider';
 // import {TestDecorator} from "../simplePlugin";
 
-@Injectable(ResolveTypes.SCOPED)
-class Foo implements IGuard { 
-    constructor() {}
-    verify(req: IRequest, options: RouteMeta<{ role: string }>) {
+@Injectable(ResolveTypes.WEAK_SCOPED)
+class Foo implements IGuard {
+    public guardId: string = uuidv4()
+    constructor(public headers: HeadersProvider) {
+        console.log(headers.testHeader, 'TEST HEADER IN GUARD')
+        // headers['auth']
+    }
+    public verify(req: IRequest, options: RouteMeta<{ role: string }>) {
         // console.log(options, '****************************')
         // console.log(options.requestOptions.useGuard)
         // console.log(options.requestOptions.role)
-        // return options  
+        // return options
         // throw new Error('DDDDDDDDDDDDDDD')
     }
 }
@@ -28,62 +33,64 @@ class Foo implements IGuard {
 @Injectable(ResolveTypes.SCOPED)
 export class SomeController extends HttpController {
     public id!: string;
-    constructor(public someService: SomeService) {
-        super()
+    constructor(public someService: SomeService, public headers: HeadersProvider) {
+        super();
+        console.log(headers.host)
+        console.log(headers.testHeader, 'TEST HEADER IN CONTROLLER')
     }
 
-    onInit() {
-        this.id = uuidv4()
-        console.log('initialized ', this.id)
+    public onInit() {
+        this.id = uuidv4();
+        console.log('initialized ', this.id);
     }
 
-    onDestroy() {
-        console.log('destroyed ', this.id)
+    public onDestroy() {
+        console.log('destroyed ', this.id);
     }
 
     // @TestDecorator()
     @Get('/')
-    getSuccess(req: IRequestParams) {
+    public getSuccess(req: IRequestParams) {
         // console.log(args.fake)
-        return { data: "success", controllerId: this.id, serviceId: this.someService.id }
+        return { data: 'success', controllerId: this.id, serviceId: this.someService.id };
     }
 
     @Get('/service')
-    getFromService(args: IRequestParams) {
-     console.log(args)
+    public getFromService(args: IRequestParams) {
+     console.log(args);
 
-        return this.someService.getSomeData()
+     return this.someService.getSomeData();
     }
 
     @Post('echo/:param')
-    echo({ body, params, query, fake, headers }: IRequestParams<{data: any}, {echo: string}, {param: string}, { fake: string }>) {
+    public echo({ body, params, query, headers }: IRequestParams<{data: any}, {echo: string}, {param: string}>) {
         return {
             body: body.data,
             params: params.param,
-            query: query.echo
-        }
+            query: query.echo,
+        };
     }
 
     @Get('/single-after-hook/:param')
-    singleAfterHook() {
+    public singleAfterHook() {
         // console.log(data)
-        this.res.send({ break: `response closed manually` })
+        this.res.send({ break: `response closed manually` });
     }
 
     @Get<{ data: string }>('/custom-error', { data: 'true' })
-    badRequest(args: IRequestParams) {
-        throw new BadRequestError('custom error')
+    public badRequest(args: IRequestParams) {
+        throw new BadRequestError('custom error');
     }
 
     @Get('/internal-error')
-    internalError() {
+    public internalError() {
         let unknown: string;
         // @ts-ignore
         unknown.charCodeAt(0);
     }
 
     @Get('/from-external-service')
-    fromExternalServices(args: IRequestParams) {
+    public fromExternalServices(args: IRequestParams) {
         return this.someService.getInjectedData();
     }
 }

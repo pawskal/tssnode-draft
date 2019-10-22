@@ -5,19 +5,18 @@ const PLUGIN_NAME = 'TSNodeExpress.name';
 
 import {
   Controller,
-  // Authorization,
-  Get, 
-  Post, 
-  Put, 
-  Patch, 
   Delete,
+  Get,
   Guard,
+  Patch,
+  Post,
+  Put,
 } from './decorators';
 
 import {
+  HttpMethods,
   IRequest,
   IResponse,
-  HttpMethods
 } from './interfaces';
 
 // export type IRequest<T> = IRequest<T>;
@@ -27,13 +26,12 @@ export type IResponse = IResponse;
 export {
   Controller,
   Guard,
-  Get, 
-  Post, 
-  Put, 
-  Patch, 
+  Get,
+  Post,
+  Put,
+  Patch,
   Delete,
   HttpMethods,
 };
-
 
 export { TSNodeExpress, PLUGIN_NAME };

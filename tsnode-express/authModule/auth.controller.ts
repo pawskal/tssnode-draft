@@ -5,7 +5,7 @@ import { Controller, Post, Get, Guard } from '../httpPlugin';
 import { ConfigProvider, Injectable, ResolveTypes } from '../../tsnode-core/lib';
 import { IRequestParams } from '../httpPlugin/interfaces';
 import { AuthGuard } from './auth.guard';
-import { HttpController } from '../httpPlugin/helpers';
+import { HttpController } from '../httpPlugin/core';
 
 @Guard(AuthGuard)
 @Controller('auth') 

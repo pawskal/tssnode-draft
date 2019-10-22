@@ -1,8 +1,7 @@
 import 'reflect-metadata'
 import { Type } from './interfaces';
 import { ResolveTypes } from './interfaces';
-import { NotFoundError, InternalServerError, ExtendedError, UnauthorizedError } from 'ts-http-errors';
-// import { success, warning, error, info } from 'nodejs-lite-logger';
+import { InternalServerError } from 'ts-http-errors';
 
 const _global = global as any;
 
@@ -21,6 +20,7 @@ export default class Injector {
   private injections: Map<string, IInjection> = new Map<string, IInjection>();
 
   private instances: Map<string, any> = new Map<string, any>();
+  private weakInstances: WeakMap<any, Map<string, any>> = new WeakMap<any, Map<string, any>>();
 
   public plugins: Map<string, any> = new Map<string, any>();
 
@@ -28,32 +28,83 @@ export default class Injector {
     return Injector._instance || (_global._injector = Injector._instance = this);
   }
 
-  private _resolve<T>(injection: Type<T>): T {
-    console.log(injection)
+  private _resolve<T>(injection: Type<T>, dependency?: unknown): T {
     const tokens: Array<FunctionConstructor> = Reflect.getMetadata('design:paramtypes', injection) || [];
-    const instances: Array<T> = tokens.map(t => this._resolveTarget<any>(t.name)) || [];
+    const instances: Array<T> = tokens.map(t => this._resolveTarget<any>(t.name, dependency)) || [];
     return new injection(...instances)
   }
 
-  public _resolveTarget<T>(targetName: string): T {
+  public _resolveTarget<T>(targetName: string, dependency?: unknown): T {
     try {
       const { injection, resolveType }: IInjection = this.injections.has(targetName)
         && this.injections.get(targetName)
         || { resolveType: ResolveTypes.SINGLETON } as IInjection;
 
-      if (resolveType === ResolveTypes.SINGLETON) {
+      if(injection) {
+        if (resolveType === ResolveTypes.SINGLETON) {
+          if(this.instances.has(targetName)){
+            return this.instances.get(targetName);
+          }
+          return this.instances
+            .set(targetName, this._resolve(injection))
+            .get(targetName);
+        } 
+        if(resolveType === ResolveTypes.WEAK_SCOPED) {
+
+          if(!this.weakInstances.has(dependency)) {
+            this.weakInstances.set(dependency, new Map)
+          }
+          const instances = this.weakInstances.get(dependency);
+          
+          if(instances!.has(targetName)) {
+            return instances!.get(targetName);
+          }
+
+          return instances!
+            .set(targetName, this._resolve(injection, dependency))
+            .get(targetName);
+        }
+        if(resolveType === ResolveTypes.WEAK) {
+          
+          if(!this.weakInstances.has(dependency)) {
+            this.weakInstances.set(dependency, new Map)
+          }
+          const instances = this.weakInstances.get(dependency);
+          
+          if(instances!.has(targetName)) {
+            return instances!.get(targetName);
+          }
+
+          return instances!
+            .set(targetName, new injection(dependency))
+            .get(targetName);
+        }
+        return this._resolve(injection, dependency)
+      } else {
         if(this.instances.has(targetName)){
           return this.instances.get(targetName);
+        } 
+        if(this.weakInstances.has(dependency)) {
+          const instances = this.weakInstances.get(dependency);
+          if(instances!.has(targetName)) {
+            return instances!.get(targetName)
+          }
+          return this._resolve(injection, dependency)
         }
-        return this.instances
-          .set(targetName, this._resolve(injection))
-          .get(targetName);
+        return this._resolve(injection, dependency)
       }
-      return this._resolve(injection)
     } catch (e) {
       console.error(e)
       throw new InternalServerError(`Unable to resolve injection ${targetName}`)
     }
+  }
+
+  public setWeakInstance(dependency: unknown, target: any) {
+    if(!this.weakInstances.has(dependency)) {
+      this.weakInstances.set(dependency, new Map());
+    } 
+    const instances = this.weakInstances.get(dependency);
+    instances!.set(target.constructor.name, target);
   }
 
   public setInstance(name: string, target: any): void;

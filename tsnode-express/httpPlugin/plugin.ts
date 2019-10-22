@@ -1,24 +1,31 @@
-import TSNodeCore from '../../tsnode-core/lib/_application';
-import express, { IRouterHandler, IRouterMatcher, Express } from 'express';
-import Router from 'express';
 import bodyParser from 'body-parser';
-import { NotFoundError, InternalServerError, ExtendedError } from 'ts-http-errors';
-// import { success, warning, error, info } from 'nodejs-lite-logger';
+import express, { Express, IRouterHandler, IRouterMatcher } from 'express';
+import Router from 'express';
+import { ExtendedError, InternalServerError, NotFoundError } from 'ts-http-errors';
 
-import { httpMeta } from './decorators'; 
-import {  HttpController } from './helpers';
+import TSNodeCore from '../../tsnode-core/lib/_application';
+
 import { ConfigProvider } from '../../tsnode-core/lib';
-import { HttpMethods, IRequest, IResponse, IRoutes, IControllerDefinition } from './interfaces';
+import {  HttpController, httpMeta } from './core';
+import { HttpMethods, IControllerDefinition, IGuard, IGuardDefinition, IRequest, IResponse, IRoutes } from './interfaces';
+import { ControllerResolver } from './core/injectionHelper';
+
 
 class TSNodeExpress extends TSNodeCore {
+
+  public get controllers(): Map<string, IControllerDefinition> {
+    return httpMeta.controllers;
+  }
+
+  public get guards(): Map<string, IGuardDefinition<IGuard, unknown>> {
+    return httpMeta.guards;
+  }
   public express: Express;
-
-  protected router: Express;
-
-  protected enableAthorization: boolean = false;
 
   public use: IRouterHandler<TSNodeExpress> & IRouterMatcher<TSNodeExpress>;
 
+  protected router: Express;
+  // protected injectionHelper = new ControllerResolver(this._injector)
   constructor(cb?: Function) {
     super();
     this.express = express();
@@ -27,8 +34,8 @@ class TSNodeExpress extends TSNodeCore {
 
     cb ? cb(this.express) : void 0;
 
-    this.use = function (): TSNodeExpress {
-      this.express.use(...arguments)
+    this.use = function(): TSNodeExpress {
+      this.express.use(...arguments);
       return this;
     };
 
@@ -37,8 +44,35 @@ class TSNodeExpress extends TSNodeCore {
     this.use(bodyParser.urlencoded({ extended: false }));
   }
 
-  public get controllers(): Map<string, IControllerDefinition> {
-    return httpMeta.controllers;
+  public handleNotFound() {
+    this.handleError(
+      new NotFoundError(`Route ${arguments[0].originalUrl} was not found`),
+      ...arguments,
+    );
+  }
+
+  public handleError(err: ExtendedError, ...args: any[]): void;
+  public handleError(err: ExtendedError, req: IRequest, res: IResponse, next: Function): void {
+    const { configProvider }: ConfigProvider = this;
+    if (err.statusCode) {
+      configProvider.logLevels.includes('warning')
+        && console.warn(err.name, '\t', configProvider.printStack ? err : err.message);
+      res.status(err.statusCode).json(err);
+    } else {
+      configProvider.logLevels.includes('error') && console.error(err);
+      res.status(500).json(new InternalServerError(err.message));
+    }
+  }
+
+  public async start(cb: Function): Promise<void> {
+    this.addExportValue<TSNodeExpress>('express');
+    super.start((...args: any[]) => {
+      this.controllers.forEach(this.buildController.bind(this));
+
+      this.use(this.handleNotFound.bind(this));
+      this.use(this.handleError.bind(this));
+      cb(...args);
+    });
   }
 
   protected health() {
@@ -47,74 +81,38 @@ class TSNodeExpress extends TSNodeCore {
                 .json({ status: 'live' });
   }
 
-  public handleNotFound() {
-    this.handleError(
-      new NotFoundError(`Route ${arguments[0].originalUrl} was not found`),
-      ...arguments
-    )
+  protected getControllerGuard({ definition }: IControllerDefinition) {
+    return this.guards.get(definition.name)
   }
 
-  public handleError(err: ExtendedError, ...args: any[]): void;
-  public handleError(err: ExtendedError, req: IRequest, res: IResponse, next: Function): void {
+  protected buildController(controllerDefinition: IControllerDefinition): void {
     const { configProvider }: ConfigProvider = this;
-    if(err.statusCode) {
-      configProvider.logLevels.includes('warning')
-        && console.warn(err.name, '\t', configProvider.printStack ? err : err.message);
-      res.status(err.statusCode).json(err);
-    } else {
-      configProvider.logLevels.includes('error') && console.error(err);
-      res.status(500).json(new InternalServerError(err.message));
-    }  
-  }
+    const guardDefinition = this.getControllerGuard(controllerDefinition)!
 
-  protected buildController(definition: IControllerDefinition, name: string) : void {
-    const { configProvider }: ConfigProvider = this;
-
+    const controllerResolver = new ControllerResolver<IGuard, unknown>(this._injector, controllerDefinition, guardDefinition)
     const router = Router();
-    const { routes, basePath = '/' } = definition;
-
+    const { routes, basePath = '/' } = controllerDefinition;
+    console.log(this.guards)
     new Map<string, IRoutes>([...routes.entries()]
-      .sort(([path]: Array<any>) => path.startsWith('/:') ? 1 : -1))
+      .sort(([path]: any[]) => path.startsWith('/:') ? 1 : -1))
       .forEach((routes: IRoutes, path: string) =>
         Object.keys(routes).forEach((methodKey: string) => {
-          const method = methodKey as HttpMethods
+          const method = methodKey as HttpMethods;
 
           const handler = HttpController.getHandler(
-            this.resolve.bind(this),
-            definition,
+            controllerResolver,
             routes[method]!,
+          );
+
+          this.use(basePath!, router[method](
+            path,
+            [].filter((m) => m),
+            handler,
           )
-
-          const logMiddleware = configProvider.logLevels.includes('info')
-            && function() { 
-              console.log(
-                method.toUpperCase(), '\t',
-                `${basePath}${path}`, '\t',
-                'target: ', '\t',
-                routes[method]!.name || '',
-              );
-              arguments[2].call();
-        }
-
-        this.use(basePath!, router[method](
-          path,
-          [logMiddleware].filter(m => m),
-          handler
-        ));
+        );
         configProvider.logLevels.includes('success')
           && console.log(method.toUpperCase(), '\t', `${basePath}${path}`);
     }));
-  }
-
-  public async start(cb: Function) : Promise<void> {
-    this.addExportValue<TSNodeExpress>('express');
-    super.start((...args: any[]) => {
-      this.controllers.forEach(this.buildController.bind(this));
-  
-      this.use(this.handleNotFound.bind(this));
-      this.use(this.handleError.bind(this));
-      cb(...args);
-    });
   }
 }
 

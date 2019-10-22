@@ -1,4 +1,4 @@
-import { SomeService } from './some.service';
 import { SomeController } from './some.controller';
+import { SomeService } from './some.service';
 
-export { SomeController, SomeService }
+export { SomeController, SomeService };
