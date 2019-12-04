@@ -1,8 +1,7 @@
-import { NextFunction, Request, Response, RouterOptions } from 'express';
-import { ApplicationRequestHandler, IRouterHandler, IRouterMatcher, PathParams, RequestHandler } from 'express-serve-static-core';
+import { Request, Response } from 'express';
+import { PathParams } from 'express-serve-static-core';
 import { IncomingHttpHeaders } from 'http';
 import { Type } from '../../tsnode-core/lib/interfaces';
-import { HttpController } from './core/httpController';
 import { RouteMeta } from './serviceProviders/routeMeta';
 
 export enum HttpMethods {
@@ -14,6 +13,8 @@ export enum HttpMethods {
   PATCH = 'patch',
   OPTIONS = 'options',
 }
+
+export interface IHttpController extends IOnInit, IOnDestroy {}
 
 export type IRequestParams<B = {}, Q = {}, P = {}> = {
   body: B;
@@ -57,7 +58,7 @@ export interface IRequestArguments extends IRequestParams {}
 export interface IControllerDefinition {
   basePath: PathParams;
   routes: Map<string, IRoutes>;
-  definition: Type<HttpController>;
+  definition: Type<IHttpController>;
 }
 
 export type IRequestOptions<T> = T & IUseGuard;

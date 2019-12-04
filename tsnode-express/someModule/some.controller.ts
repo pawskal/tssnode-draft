@@ -7,10 +7,35 @@ import uuidv4 from 'uuidv4';
 import {SomeService} from './some.service';
 import { ResolveTypes } from '../../tsnode-core/lib/interfaces';
 import { User } from '../authModule/auth.service';
-import { HttpController, RouteMeta } from '../httpPlugin/core';
-import { IGuard, IRequest, IRequestParams, IResponse } from '../httpPlugin/interfaces';
+import { RouteMeta } from '../httpPlugin/core';
+import { IGuard, IRequest, IRequestParams, IResponse, IHttpController } from '../httpPlugin/interfaces';
 import { HeadersProvider } from '../httpPlugin/serviceProviders/headersProvider';
+import { RequestContext } from '../httpPlugin/serviceProviders/requestContext';
+import { Factory } from '../../tsnode-core/lib/_decorators';
 // import {TestDecorator} from "../simplePlugin";
+
+interface IFooBar {
+    get?: Function
+}
+class FooBar implements IFooBar  {
+    
+}
+
+class IFoo extends FooBar {
+    get() { return 'foo' }
+}
+
+class IBar extends FooBar {
+    get() { return 'bar' }
+}
+
+class GuardResult {
+    constructor(opts: any) {
+        Object.assign(this, opts)
+    }
+}
+
+// function fooBarFactory
 
 @Injectable(ResolveTypes.WEAK_SCOPED)
 class Foo implements IGuard {
@@ -25,18 +50,25 @@ class Foo implements IGuard {
         // console.log(options.requestOptions.role)
         // return options
         // throw new Error('DDDDDDDDDDDDDDD')
+        return new GuardResult({ success: true })
     }
 }
 
 @Guard(Foo)
 @Controller('some')
+// @Factory<RequestContext>(({ request }) => )
 @Injectable(ResolveTypes.SCOPED)
-export class SomeController extends HttpController {
+export class SomeController implements IHttpController {
     public id!: string;
-    constructor(public someService: SomeService, public headers: HeadersProvider) {
-        super();
+    constructor(
+        public someService: SomeService,
+        public requestContext: RequestContext,
+        public headers: HeadersProvider,
+        public guard: GuardResult) {
         console.log(headers.host)
         console.log(headers.testHeader, 'TEST HEADER IN CONTROLLER')
+        console.log({guard}, 'guard')
+        // console.log({fooBar}, 'fooBar')
     }
 
     public onInit() {
@@ -73,8 +105,7 @@ export class SomeController extends HttpController {
 
     @Get('/single-after-hook/:param')
     public singleAfterHook() {
-        // console.log(data)
-        this.res.send({ break: `response closed manually` });
+        this.requestContext.response.send({ break: `response closed manually` });
     }
 
     @Get<{ data: string }>('/custom-error', { data: 'true' })

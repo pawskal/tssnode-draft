@@ -7,12 +7,13 @@ import {
   IPropertyDescriptor,
   IRequestOptions,
   IRoutes,
-  TypeFunction } from "./interfaces";
+  TypeFunction, 
+  IHttpController} from "./interfaces";
 
 import { Type } from "../../tsnode-core/lib/interfaces";
-import { HttpController, httpMeta } from "./core";
+import { httpMeta } from "./core";
 
-export const Controller = <T extends HttpController>(name: string): TypeFunction<T> =>
+export const Controller = <T extends IHttpController>(name: string): TypeFunction<T> =>
   httpMeta.ControllerDecorator.call(httpMeta, name);
 
 export const Get = <T>(path: string, requestOptions?: IRequestOptions<T>) =>

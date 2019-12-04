@@ -6,9 +6,10 @@ import { ExtendedError, InternalServerError, NotFoundError } from 'ts-http-error
 import TSNodeCore from '../../tsnode-core/lib/_application';
 
 import { ConfigProvider } from '../../tsnode-core/lib';
-import {  HttpController, httpMeta } from './core';
+import { httpMeta } from './core';
 import { HttpMethods, IControllerDefinition, IGuard, IGuardDefinition, IRequest, IResponse, IRoutes } from './interfaces';
 import { ControllerResolver } from './core/injectionHelper';
+import { HttpMeta } from './core/httpMeta';
 
 
 class TSNodeExpress extends TSNodeCore {
@@ -44,15 +45,16 @@ class TSNodeExpress extends TSNodeCore {
     this.use(bodyParser.urlencoded({ extended: false }));
   }
 
-  public handleNotFound() {
+  public handleNotFound(): this {
     this.handleError(
       new NotFoundError(`Route ${arguments[0].originalUrl} was not found`),
       ...arguments,
     );
+    return this;
   }
 
-  public handleError(err: ExtendedError, ...args: any[]): void;
-  public handleError(err: ExtendedError, req: IRequest, res: IResponse, next: Function): void {
+  public handleError(err: ExtendedError, ...args: any[]): this;
+  public handleError(err: ExtendedError, req: IRequest, res: IResponse, next: Function): this {
     const { configProvider }: ConfigProvider = this;
     if (err.statusCode) {
       configProvider.logLevels.includes('warning')
@@ -62,17 +64,15 @@ class TSNodeExpress extends TSNodeCore {
       configProvider.logLevels.includes('error') && console.error(err);
       res.status(500).json(new InternalServerError(err.message));
     }
+    return this;
   }
 
-  public async start(cb: Function): Promise<void> {
-    this.addExportValue<TSNodeExpress>('express');
-    super.start((...args: any[]) => {
+  public setup(): this  {
       this.controllers.forEach(this.buildController.bind(this));
-
       this.use(this.handleNotFound.bind(this));
       this.use(this.handleError.bind(this));
-      cb(...args);
-    });
+       super.setup();
+       return this;
   }
 
   protected health() {
@@ -88,7 +88,7 @@ class TSNodeExpress extends TSNodeCore {
   protected buildController(controllerDefinition: IControllerDefinition): void {
     const { configProvider }: ConfigProvider = this;
     const guardDefinition = this.getControllerGuard(controllerDefinition)!
-
+    console.log('#################')
     const controllerResolver = new ControllerResolver<IGuard, unknown>(this._injector, controllerDefinition, guardDefinition)
     const router = Router();
     const { routes, basePath = '/' } = controllerDefinition;
@@ -99,7 +99,7 @@ class TSNodeExpress extends TSNodeCore {
         Object.keys(routes).forEach((methodKey: string) => {
           const method = methodKey as HttpMethods;
 
-          const handler = HttpController.getHandler(
+          const handler = HttpMeta.getHandler(
             controllerResolver,
             routes[method]!,
           );

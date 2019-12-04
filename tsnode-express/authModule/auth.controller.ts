@@ -3,17 +3,17 @@ import jwt from 'jsonwebtoken';
 import { AuthService, User } from "./auth.service";
 import { Controller, Post, Get, Guard } from '../httpPlugin';
 import { ConfigProvider, Injectable, ResolveTypes } from '../../tsnode-core/lib';
-import { IRequestParams } from '../httpPlugin/interfaces';
+import { IRequestParams, IHttpController } from '../httpPlugin/interfaces';
 import { AuthGuard } from './auth.guard';
-import { HttpController } from '../httpPlugin/core';
 
 @Guard(AuthGuard)
 @Controller('auth') 
 @Injectable(ResolveTypes.SCOPED)
-export class AuthController extends HttpController { 
+export class AuthController implements IHttpController { 
   constructor(public authService: AuthService, public config: ConfigProvider) {
-    super()
   }
+
+  onInit() {}
 
   @Post('/')
   addUser({ query }: IRequestParams<never, User>) {

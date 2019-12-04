@@ -1,6 +1,6 @@
-import Injector from './_injector';
+import Injector, { IFacatoryInjection } from './_injector';
 import {
-    Type, SetConfig,
+    Type, SetConfig, ResolveTypes,
 } from './interfaces';
 import {  ConfigProvider } from './helpers';
 
@@ -15,10 +15,6 @@ class TSNodeCore {
 
   public configProvider: ConfigProvider;
 
-  protected pendingInjections: Map<string, Promise<any>> = new Map<string, Promise<void>>()
-
-  // protected autoInjections: string[] = [];
-
   protected plugins: string[] = [];
 
   constructor() {
@@ -30,39 +26,38 @@ class TSNodeCore {
       logLevels: [],
       printStack: false
     });
+    this._injector.setInstance(this.configProvider);
   }
 
-  public resolve<T>(type: Type<T>): T {
+  public resolve<T>(type: Type<T>):Promise< T> {
     return this._injector._resolveTarget(type.name);
   }
 
-  public useConfig(cb: SetConfig) : TSNodeCore {
-    this.pendingInjections.set(ConfigProvider.name, cb ? cb(this.configProvider) : Promise.resolve<any>(null));
+  public useConfig(cb: SetConfig) : this {
+    cb(this.configProvider)
     return this;
   }
 
-  public registerModule(...args: any[]) : TSNodeCore 
-  public registerModule(): TSNodeCore {
+  public registerModule(...args: any[]) : this 
+  public registerModule(): this {
     return this;
   }
 
-  // public autoResolve<T>(target: Type<T>): TSNodeCore {
-  //   this.autoInjections.push(target.name);
-  //   this._injector.set(target);
-  //   return this;
-  // }
-
-  public usePlugin<T>(plugin: Type<T>): TSNodeCore {
+  public usePlugin<T>(plugin: Type<T>): this {
     this.plugins.push(plugin.name);
     this._injector.set(plugin);
     return this;
   }
 
-  public inject<T>(name: string, cb: Function): TSNodeCore;
-  public inject<T>(instance: T): TSNodeCore;
-  public inject(): TSNodeCore {
+  public inject<T>(instance: T) : this;
+  public inject<T, K extends T>(definition: Type<T>, factory: (configProvider?: ConfigProvider) => K | Promise<K>) : this;
+  public inject<T, K extends T>(definition: Type<T>, factory: (configProvider?: ConfigProvider) => K | Promise<K>, resoleType: ResolveTypes.SCOPED | ResolveTypes.SINGLETON) : this;
+  public inject() : this {
     arguments.length == 1 && this._injector.setInstance(arguments[0]);
-    arguments.length == 2 && this.pendingInjections.set(arguments[0], arguments[1] ? arguments[1](this.configProvider) : Promise.resolve());
+    arguments.length > 1 && this._injector.setFactory(arguments[0], {
+      factory: arguments[1],
+      resolveType: arguments[2] || ResolveTypes.SCOPED
+    });
     return this;
   }
 
@@ -72,24 +67,14 @@ class TSNodeCore {
     return this;
   }
 
-  public async start(cb?: Function) : Promise<void> {
-    await this.pendingInjections.get(ConfigProvider.name)
-    this._injector.setInstance(this.configProvider);
-
-    await Promise.all([...this.pendingInjections.entries()]
-      .filter(([key]) => key !== ConfigProvider.name)
-      .map(async ([key, injectionPromise]) => {
-        const injection: Type<any> = await injectionPromise;
-        return this._injector.setInstance(key, injection)
-      }));
-
+  public setup() : this {
     this.plugins.forEach((inj: string) => {
-        this._injector._resolveTarget(inj);
-        if(!this._injector.getPlugin(inj)){
-            this._injector.plugins.set(inj, {});
-        }
+      this._injector._resolveTarget(inj);
+      if(!this._injector.getPlugin(inj)){
+        this._injector.plugins.set(inj, {});
+      }
     });
-    cb && cb(...this.exportValues.map((value: keyof TSNodeCore) => this[value]));
+    return this;
   }
 }
 

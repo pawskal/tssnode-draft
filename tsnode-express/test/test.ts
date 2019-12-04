@@ -2,23 +2,14 @@ import test from 'tape';
 import { Express } from 'express'
 import request from 'supertest';
 import application from '../server'
+import { TSNodeExpress } from '../httpPlugin';
 
-let app: Express;
-
-test('start server', async (t) => {
-  await application
-      .start((express: Express) => {
-        app = express
-        t.end()
-      }
-    );
-})
+const { express: app }: TSNodeExpress = application.setup()
 
 test('server should be live', async (t) => {
   const { body } = await request(app).get(`/health`);
   t.equal(body.status, 'live', 'status should be live');
   t.end();
-
 })
 
 test('server should return 404', async (t) => {
@@ -230,18 +221,18 @@ test('should catch internal error', async (t) => {
 
 })
 
-// test('should return correct data from injected services without decorators', async (t) => {
-//   const expected = {
-//     injectedService: 'injected as class',
-//     iInjectedService: 'injected as interface'
-//   };
-//   try {
-//     const data = await request(app).get(`/some/from-external-service`);
-//     t.deepEqual(data, expected, 'Should external data');
-//   }
-//   catch(e) { t.ifErr(e); }
-//   finally { t.end(); }
-// })
+test('should return correct data from injected services without decorators', async (t) => {
+  const expected = {
+    injectedService: 'injected as class',
+    iInjectedService: 'injected as interface'
+  };
+  try {
+    const { body } = await request(app).get(`/some/from-external-service`);
+    t.deepEqual(body, expected, 'Should external data');
+  }
+  catch(e) { t.ifErr(e); }
+  finally { t.end(); }
+})
 
 // test('exit tests', (t) => {
 //   t.end();

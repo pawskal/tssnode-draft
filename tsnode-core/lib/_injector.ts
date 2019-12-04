@@ -10,6 +10,11 @@ interface IInjection {
   resolveType: ResolveTypes;
 }
 
+export interface IFacatoryInjection<T> {
+  factory: (...args: Array<any>) => any | Promise<T>;
+  resolveType: ResolveTypes;
+}
+
 export default class Injector {
   public static getInstance(): Injector {
     return new Injector();
@@ -18,6 +23,7 @@ export default class Injector {
   private static _instance: Injector;
   
   private injections: Map<string, IInjection> = new Map<string, IInjection>();
+  private factoryInjections: Map<string, IFacatoryInjection<unknown>> = new Map<string, IFacatoryInjection<unknown>>();
 
   private instances: Map<string, any> = new Map<string, any>();
   private weakInstances: WeakMap<any, Map<string, any>> = new WeakMap<any, Map<string, any>>();
@@ -28,58 +34,59 @@ export default class Injector {
     return Injector._instance || (_global._injector = Injector._instance = this);
   }
 
-  private _resolve<T>(injection: Type<T>, dependency?: unknown): T {
+  private getWeakInstances(dependency: unknown) {
+    if(!this.weakInstances.has(dependency)) {
+      this.weakInstances.set(dependency, new Map)
+    }
+    return this.weakInstances.get(dependency);
+  }
+
+  private getOrSetNGet(collection: Map<any, any>, key: any, valueResolver: () => any) {
+    if(collection.has(key)){
+      return collection.get(key);
+    }
+    return collection
+      .set(key, valueResolver())
+      .get(key);
+  }
+
+  private async _resolve<T>(injection: Type<T>, dependency?: unknown): Promise<T> {
     const tokens: Array<FunctionConstructor> = Reflect.getMetadata('design:paramtypes', injection) || [];
-    const instances: Array<T> = tokens.map(t => this._resolveTarget<any>(t.name, dependency)) || [];
+    const instances: Array<T> = await Promise.all(tokens.map(t => this._resolveTarget<any>(t.name, dependency)) || []);
     return new injection(...instances)
   }
 
-  public _resolveTarget<T>(targetName: string, dependency?: unknown): T {
+  public async _resolveTarget<T>(targetName: string, dependency?: unknown): Promise<T> {
     try {
-      const { injection, resolveType }: IInjection = this.injections.has(targetName)
-        && this.injections.get(targetName)
-        || { resolveType: ResolveTypes.SINGLETON } as IInjection;
-
-      if(injection) {
+      if(this.injections.has(targetName)) {
+        const { injection, resolveType } = this.injections.get(targetName)!
         if (resolveType === ResolveTypes.SINGLETON) {
-          if(this.instances.has(targetName)){
-            return this.instances.get(targetName);
-          }
-          return this.instances
-            .set(targetName, this._resolve(injection))
-            .get(targetName);
+          return this.getOrSetNGet(this.instances, targetName, () => this._resolve(injection))
         } 
         if(resolveType === ResolveTypes.WEAK_SCOPED) {
-
-          if(!this.weakInstances.has(dependency)) {
-            this.weakInstances.set(dependency, new Map)
-          }
-          const instances = this.weakInstances.get(dependency);
-          
-          if(instances!.has(targetName)) {
-            return instances!.get(targetName);
-          }
-
-          return instances!
-            .set(targetName, this._resolve(injection, dependency))
-            .get(targetName);
+          const instances = this.getWeakInstances(dependency);
+          return this.getOrSetNGet(instances!, targetName, () => this._resolve(injection, dependency))
         }
         if(resolveType === ResolveTypes.WEAK) {
-          
-          if(!this.weakInstances.has(dependency)) {
-            this.weakInstances.set(dependency, new Map)
-          }
-          const instances = this.weakInstances.get(dependency);
-          
-          if(instances!.has(targetName)) {
-            return instances!.get(targetName);
-          }
-
-          return instances!
-            .set(targetName, new injection(dependency))
-            .get(targetName);
+          const instances = this.getWeakInstances(dependency);
+          return this.getOrSetNGet(instances!, targetName, () => new injection(dependency))
         }
         return this._resolve(injection, dependency)
+      } else if(this.factoryInjections.has(targetName)) {
+        const { factory, resolveType } = this.factoryInjections.get(targetName)!
+
+        switch(resolveType) {
+          case ResolveTypes.SINGLETON: {
+            return this.getOrSetNGet(this.instances, targetName, () => factory())
+          }
+          case ResolveTypes.WEAK_SCOPED: 
+          case ResolveTypes.WEAK: {
+            const instances = this.getWeakInstances(dependency);
+            return this.getOrSetNGet(instances!, targetName, () => factory(dependency))
+          }
+
+          default: return factory()
+        }
       } else {
         if(this.instances.has(targetName)){
           return this.instances.get(targetName);
@@ -89,9 +96,9 @@ export default class Injector {
           if(instances!.has(targetName)) {
             return instances!.get(targetName)
           }
-          return this._resolve(injection, dependency)
+          throw new Error('foo')
         }
-        return this._resolve(injection, dependency)
+        throw new Error('bar')
       }
     } catch (e) {
       console.error(e)
@@ -100,18 +107,16 @@ export default class Injector {
   }
 
   public setWeakInstance(dependency: unknown, target: any) {
-    if(!this.weakInstances.has(dependency)) {
-      this.weakInstances.set(dependency, new Map());
-    } 
-    const instances = this.weakInstances.get(dependency);
+    const instances = this.getWeakInstances(dependency);
     instances!.set(target.constructor.name, target);
   }
 
-  public setInstance(name: string, target: any): void;
-  public setInstance(target: any): void;
-  public setInstance(): void {
-    arguments.length == 2 && this.instances.set(arguments[0], arguments[1]);
-    arguments.length == 1 && this.instances.set(arguments[0].constructor.name, arguments[0]);
+  setFactory<T, K extends T>(target: Type<T>, options: IFacatoryInjection<K>) {
+    this.factoryInjections.set(target.name, options)
+  }
+
+  public setInstance(target: any): void {;
+    this.instances.set(target.constructor.name, target);
   }
 
   public set(target: Type<any>, resolveType: ResolveTypes = ResolveTypes.SINGLETON): void {
@@ -128,6 +133,15 @@ export default class Injector {
   public InjectableDecorator (resolveType: ResolveTypes = ResolveTypes.SINGLETON) : Function {
     return (target: Type<any>) : void => {
       this.set(target, resolveType);
+    }
+  } 
+
+  public FactoryDecorator<T, K>(factory: (options: T) => K | Promise<K>, resolveType?: ResolveTypes.WEAK_SCOPED | ResolveTypes.WEAK) : Function {
+    return (target: Type<any>) : void => {
+      this.setFactory(target, {
+        factory,
+        resolveType: resolveType || ResolveTypes.WEAK_SCOPED
+      });
     }
   } 
 }

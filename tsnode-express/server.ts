@@ -13,9 +13,7 @@ const injectedService: InjectedService = new InjectedService({
   stub: 'injected as class'
 });
 
-function setConfig(config: ConfigProvider): Promise<void> {
-  return new Promise((resolve) => 
-    setTimeout(() => {
+function setConfig(config: ConfigProvider) {
       config.test = 'test config field';
       config.secret = 'SUPER SECRET'
       config.logLevels = ['info', 'success', 'error', 'warning'];
@@ -25,8 +23,6 @@ function setConfig(config: ConfigProvider): Promise<void> {
       config.redisPort = process.env.REDIS_PORT;
       config.redisPassword = process.env.REDIS_PASS;
       config.transportChannel = 'example';
-      resolve();
-    }, 1000));
 }
 
 const application = new TSNodeExpress();
@@ -35,7 +31,7 @@ application
   .use(cors())
   .useConfig(setConfig)
   .inject<InjectedService>(injectedService)
-  .inject<IInjectedService>('IInjectedService', async () => ({ stub: 'injected as interface' }))
+  .inject<IInjectedService, IInjectedService>(IInjectedService, async () => ({ stub: 'injected as interface' }))
   .registerModule(SomeModule)
   .registerModule(AuthModule)
 
