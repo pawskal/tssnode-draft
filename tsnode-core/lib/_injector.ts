@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import { Type } from './interfaces';
+import { Type, AbstractType } from './interfaces';
 import { ResolveTypes } from './interfaces';
 import { InternalServerError } from 'ts-http-errors';
 
@@ -111,7 +111,7 @@ export default class Injector {
     instances!.set(target.constructor.name, target);
   }
 
-  setFactory<T, K extends T>(target: Type<T>, options: IFacatoryInjection<K>) {
+  public setFactory<T, K extends T>(target: Type<T> | AbstractType<T>, options: IFacatoryInjection<K>) {
     this.factoryInjections.set(target.name, options)
   }
 
@@ -127,7 +127,7 @@ export default class Injector {
   }
 
   public getPlugin(name: string): any {
-      return this.plugins.get(name);
+      return this.plugins.get(name);  
   }
 
   public InjectableDecorator (resolveType: ResolveTypes = ResolveTypes.SINGLETON) : Function {
@@ -136,11 +136,11 @@ export default class Injector {
     }
   } 
 
-  public FactoryDecorator<T, K>(factory: (options: T) => K | Promise<K>, resolveType?: ResolveTypes.WEAK_SCOPED | ResolveTypes.WEAK) : Function {
-    return (target: Type<any>) : void => {
+  public FactoryDecorator<N, K extends N, T>(target: AbstractType<N>, factory: (options: T) => K | Promise<K>, resolveType?: ResolveTypes.WEAK_SCOPED | ResolveTypes.WEAK | ResolveTypes.SCOPED) : Function{
+    return () : void => {
       this.setFactory(target, {
         factory,
-        resolveType: resolveType || ResolveTypes.WEAK_SCOPED
+        resolveType: resolveType || ResolveTypes.SCOPED
       });
     }
   } 
