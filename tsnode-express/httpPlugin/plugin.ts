@@ -10,6 +10,7 @@ import { httpMeta } from './core';
 import { HttpMethods, IControllerDefinition, IGuard, IGuardDefinition, IRequest, IResponse, IRoutes } from './interfaces';
 import { ControllerResolver } from './core/injectionHelper';
 import { HttpMeta } from './core/httpMeta';
+import { NextFunction } from 'express-serve-static-core';
 
 
 class TSNodeExpress extends TSNodeCore {
@@ -54,12 +55,14 @@ class TSNodeExpress extends TSNodeCore {
   }
 
   public handleError(err: ExtendedError, ...args: any[]): this;
-  public handleError(err: ExtendedError, req: IRequest, res: IResponse, next: Function): this {
+  public handleError(err: ExtendedError, req: IRequest, res: IResponse, next: NextFunction): this {
+    console.log('handleError')
     const { configProvider }: ConfigProvider = this;
     if (err.statusCode) {
+      console.log(err)
       configProvider.logLevels.includes('warning')
         && console.warn(err.name, '\t', configProvider.printStack ? err : err.message);
-      res.status(err.statusCode).json(err);
+      res.status(err.statusCode).send(err.toJSON());
     } else {
       configProvider.logLevels.includes('error') && console.error(err);
       res.status(500).json(new InternalServerError(err.message));
@@ -88,11 +91,9 @@ class TSNodeExpress extends TSNodeCore {
   protected buildController(controllerDefinition: IControllerDefinition): void {
     const { configProvider }: ConfigProvider = this;
     const guardDefinition = this.getControllerGuard(controllerDefinition)!
-    console.log('#################')
     const controllerResolver = new ControllerResolver<IGuard, unknown>(this._injector, controllerDefinition, guardDefinition)
     const router = Router();
     const { routes, basePath = '/' } = controllerDefinition;
-    console.log(this.guards)
     new Map<string, IRoutes>([...routes.entries()]
       .sort(([path]: any[]) => path.startsWith('/:') ? 1 : -1))
       .forEach((routes: IRoutes, path: string) =>

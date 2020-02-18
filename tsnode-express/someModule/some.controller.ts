@@ -17,7 +17,9 @@ import { Factory } from '../../tsnode-core/lib/_decorators';
 interface IFooBar {
     get?: Function
 }
-class FooBar implements IFooBar  {
+abstract class FooBar implements IFooBar  {
+    abstract get(): any
+    uuid: string = uuidv4()
     
 }
 
@@ -56,7 +58,10 @@ class Foo implements IGuard {
 
 @Guard(Foo)
 @Controller('some')
-// @Factory<RequestContext>(({ request }) => )
+@Factory<FooBar, IBar, RequestContext>(FooBar, ({ request }) => {
+    console.log(request.path)
+    return request.params === 'foo' ? new IFoo : new IBar
+}, ResolveTypes.WEAK_SCOPED)
 @Injectable(ResolveTypes.SCOPED)
 export class SomeController implements IHttpController {
     public id!: string;
@@ -64,11 +69,13 @@ export class SomeController implements IHttpController {
         public someService: SomeService,
         public requestContext: RequestContext,
         public headers: HeadersProvider,
-        public guard: GuardResult) {
-        console.log(headers.host)
-        console.log(headers.testHeader, 'TEST HEADER IN CONTROLLER')
-        console.log({guard}, 'guard')
-        // console.log({fooBar}, 'fooBar')
+        public guard: GuardResult,
+        public fooBar: FooBar) {
+            
+        // console.log(headers.host)
+        // console.log(headers.testHeader, 'TEST HEADER IN CONTROLLER')
+        // console.log({guard}, 'guard')
+        console.log({ fooBar }, fooBar.get())
     }
 
     public onInit() {
@@ -105,6 +112,7 @@ export class SomeController implements IHttpController {
 
     @Get('/single-after-hook/:param')
     public singleAfterHook() {
+        this.requestContext.response.setHeader('custom', 'custom')
         this.requestContext.response.send({ break: `response closed manually` });
     }
 
@@ -123,6 +131,11 @@ export class SomeController implements IHttpController {
     @Get('/from-external-service')
     public fromExternalServices(args: IRequestParams) {
         return this.someService.getInjectedData();
+    }
+
+    @Get('/factory/:factory')
+    public fromFactory({ params }: IRequestParams<unknown, unknown, { factory: string }>) {
+        return this.fooBar.get();
     }
 }
 

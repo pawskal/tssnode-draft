@@ -64,137 +64,173 @@ test('Single after hook should works', async (t) => {
   const expected = {
     break: 'response closed manually',
   };
-  const { body } = await request(app).get(`/some/single-after-hook/someParam`);
+  const { body, header } = await request(app).get(`/some/single-after-hook/someParam`);
   t.deepEqual(body, expected, 'should collect expected after hook fields');
+  t.deepEqual(header['custom'], 'custom', 'should collect expected after hook fields');
   t.end()
 })
 
-// test('Should return unauthorized', async (t) => {
-//   const expected = {
-//     status: 401,
-//     message: 'Unauthorized',
-//     name: 'UnauthorizedError'
-//   }
-//   try {
-//     await request(app).post(`/auth`);
-//   }
-//   catch({ error }) {
-//     t.ok(error);
-//     t.deepEqual(error, expected, 'Should be Authorization Error')
-//   }
-//   finally { t.end(); }
-// })
+test('Should return unauthorized', async (t) => {
+  const expected = {
+    status: 401,
+    message: 'Unauthorized',
+    name: 'UnauthorizedError'
+  }
+    const {status, body} = await request(app).post(`/auth`);
+    t.equal(status, 401)
+    t.deepEqual(body, expected, 'Should be Authorization Error')
+    t.end()
+})
 
-// test('Should return auth token for John Doe', async (t) => {
-//   try {
-//     const { token } = await request(app).get(`/auth/sign-in?name=John Doe&password=qwerty9`);
-//     t.ok(token, 'should exist token');
-//   }
-//   catch(e) { t.ifErr(e); }
-//   finally { t.end(); }
-// })
+test('Should return unauthorized', async (t) => {
+  const expected = {
+    status: 401,
+    message: 'Unauthorized',
+    name: 'UnauthorizedError'
+  }
+    const {status, body} = await request(app).post(`/auth`);
+    t.equal(status, 401)
+    t.deepEqual(body, expected, 'Should be Authorization Error')
+    t.end()
+})
 
-// test('Should return auth token for Jane Doe', async (t) => {
-//   try {
-//     const { token } = await request(app).get(`/auth/sign-in?name=Jane Doe&password=qwerty8`);
-//     t.ok(token, 'should exist token');
-//   }
-//   catch(e) { t.ifErr(e); }
-//   finally { t.end(); }
-// })
+test('Should return unauthorized', async (t) => {
+  const expected = {
+    status: 401,
+    message: 'Unauthorized',
+    name: 'UnauthorizedError'
+  }
+    const {status, body} = await request(app).post(`/auth`);
+    t.equal(status, 401)
+    t.deepEqual(body, expected, 'Should be Authorization Error')
+    t.end()
+})
 
-// test('Should add new user with John Doe token', async (t) => {
-//   const expected = {
-//     name: 'JohnDoe\'sUser',
-//     role: 'default',
-//   }
-//   try {
-//     const { token } = await request(app).get(`/auth/sign-in?name=John Doe&password=qwerty9`);
-//     const headers = {
-//       'authorization': token
-//     }
-//     const { success } = await request(app).post(`/auth?name=JohnDoe'sUser&password=test&role=default`,
-//                                             Object.assign({}, { headers }));
+test('Should return unauthorized', async (t) => {
+  const expected = {
+    status: 401,
+    message: 'Unauthorized',
+    name: 'UnauthorizedError'
+  }
+    const {status, body} = await request(app).post(`/auth`);
+     await Promise.all([request(app).post(`/auth`),
+     request(app).post(`/auth`),
+     request(app).post(`/auth`),
+     request(app).post(`/auth`),
+     request(app).post(`/auth`),
+     request(app).post(`/auth`),
+     request(app).post(`/auth`),
+     request(app).post(`/auth`),
+     request(app).post(`/auth`),
+     request(app).post(`/auth`),
+     request(app).post(`/auth`),
+     request(app).post(`/auth`),
+     request(app).post(`/auth`),
+     request(app).post(`/auth`),
+     request(app).post(`/auth`),
+     request(app).post(`/auth`),
+     request(app).post(`/auth`),
+     request(app).post(`/auth`),
+     request(app).post(`/auth`),])
+    t.equal(status, 401)
+    t.deepEqual(body, expected, 'Should be Authorization Error')
+    t.end()
+})
 
-//     const data = await request(app).get(`/auth/JohnDoe'sUser`, Object.assign({}, { headers }))
-//     t.ok(token, 'should exist token');
-//     t.true(success, 'success add user')
-//     t.deepEqual(data, expected, 'Should get JohnDoe`sUser')
-//   }
-//   catch(e) { t.ifErr(e); }
-//   finally { t.end(); }
-// })
+test('Should return auth token for John Doe', async (t) => {
+  const { body: { token } } = await request(app).get(`/auth/sign-in?name=John Doe&password=qwerty9`);
+  t.ok(token, 'should exist token');
+  t.end();
+})
 
-// test('Should return Jane`s Doe user on /me', async (t) => {
-//   const expected = {
-//     name: 'JaneDoe\'sUser',
-//     role: 'default',
-//   }
-//   try {
-//     const { token } = await request(app).get(`/auth/sign-in?name=Jane Doe&password=qwerty8`);
-//     const headers = {
-//       'authorization': token
-//     }
-//     const { success } = await request(app).post(`/auth?name=JaneDoe'sUser&password=test&role=default`,
-//                                             Object.assign({}, { headers }));
+test('Should return auth token for Jane Doe', async (t) => {
+    const { body: {token} } = await request(app).get(`/auth/sign-in?name=Jane Doe&password=qwerty8`);
+    t.ok(token, 'should exist token');
+    t.end();
+})
 
-//     const data = await request(app).get(`/auth/sign-in?name=JaneDoe'sUser&password=test`);
-//     headers['authorization'] = data.token
-//     const user = await request(app).get(`/auth/me`, Object.assign({}, { headers }));
-//     t.ok(token, 'should exist token');
-//     t.true(success, 'success add user')
-//     t.deepEqual(user, expected, 'Should get JaneDoe`sUser')
-//   }
-//   catch(e) { t.ifErr(e); }
-//   finally { t.end(); }
-// })
+test('Should add new user with John Doe token', async (t) => {
+  const expected = {
+    name: 'JohnDoe\'sUser',
+    role: 'default',
+  }
+  const { body:{token} } = await request(app).get(`/auth/sign-in?name=John Doe&password=qwerty9`);
+  const { body: {success}, status } = await request(app)
+    .post(`/auth?name=JohnDoe'sUser&password=test&role=default`)
+    .set('authorization', token)
 
-// test('Should return Forbidden Error', async (t) => {
-//   const expected = {
-//     status: 403,
-//     message: 'Forbidden access for /auth/:name',
-//     name: 'ForbiddenError'
-//   }
-//   try {
-//     const { token } = await request(app).get(`/auth/sign-in?name=Jane Doe&password=qwerty8`);
-//     const headers = {
-//       'authorization': token
-//     }
-//     await request(app).post(`/auth?name=test&password=test&role=test`,
-//                                             Object.assign({}, { headers }));
+  const {body:data} = await request(app)
+    .get(`/auth/JohnDoe'sUser`)
+    .set('authorization', token)
 
-//     const data = await request(app).get(`/auth/sign-in?name=test&password=test`);
-//     headers['authorization'] = data.token
-//     await request(app).get(`/auth/Jane Doe`, Object.assign({}, { headers }));
-//   }
-//   catch({ error }) {
-//     t.ok(error);
-//     t.deepEqual(error, expected, 'Should be Forbidden Error')
-//   }
-//   finally { t.end(); }
-// })
+  t.ok(token, 'should exist token');
+  t.true(success, 'success add user');
+  t.equal(status, 201)
+  t.deepEqual(data, expected, 'Should get JohnDoe`sUser')
+  t.end();
+})
 
-// test('Should return list users', async (t) => {
-//   const expected = [
-//     { name: 'John Doe', role: 'super' },
-//     { name: 'Jane Doe', role: 'admin' },
-//     { name: 'JohnDoe\'sUser', role: 'default' },
-//     { name: 'JaneDoe\'sUser', role: 'default' },
-//     { name: 'test', role: 'test' }
-//   ]
-//   try {
-//     const { token } = await request(app).get(`/auth/sign-in?name=Jane Doe&password=qwerty8`);
-//     const headers = {
-//       'authorization': token
-//     }
-//     const data = await request(app).get(`/auth`, Object.assign({}, { headers }));
+test('Should return Jane`s Doe user on /me', async (t) => {
+  const expected = {
+    name: 'JaneDoe\'sUser',
+    role: 'default',
+  }
+    const { body:{token} } = await request(app).get(`/auth/sign-in?name=Jane Doe&password=qwerty8`);
 
-//     t.ok(token, 'should exist token');
-//     t.deepEqual(data, expected, 'Should get users')
-//   }
-//   catch(e) { t.ifErr(e); }
-//   finally { t.end(); }
-// })
+    const { body: {success} } = await request(app)
+      .post(`/auth?name=JaneDoe'sUser&password=test&role=default`)
+      .set('authorization', token);
+
+    const {body: data} = await request(app).get(`/auth/sign-in?name=JaneDoe'sUser&password=test`);
+    const {body: user} = await request(app)
+      .get(`/auth/me`)
+      .set('authorization', data.token || '');
+
+    t.ok(token, 'should exist token');
+    t.true(success, 'success add user')
+    t.deepEqual(user, expected, 'Should get JaneDoe`sUser')
+    t.end()
+})
+
+test('Should return Forbidden Error', async (t) => {
+  const expected = {
+    status: 403,
+    message: 'Forbidden access for /auth/:name',
+    name: 'ForbiddenError'
+  }
+  const { body:{token} } = await request(app).get(`/auth/sign-in?name=Jane Doe&password=qwerty8`);
+  await request(app)
+    .post(`/auth?name=test&password=test&role=test`)
+    .set('authorization', token);
+
+  const {body: data} = await request(app).get(`/auth/sign-in?name=test&password=test`);
+  const { body, status } = await request(app)
+    .get(`/auth/Jane Doe`)
+    .set('authorization', data.token || '');
+
+    t.equal(status, 403)
+    t.deepEqual(body, expected, 'Should be Forbidden Error')
+    t.end()
+})
+
+test('Should return list users', async (t) => {
+  const expected = [
+    { name: 'John Doe', role: 'super' },
+    { name: 'Jane Doe', role: 'admin' },
+    { name: 'JohnDoe\'sUser', role: 'default' },
+    { name: 'JaneDoe\'sUser', role: 'default' },
+    { name: 'test', role: 'test' }
+  ]
+    const { body:{token} } = await request(app).get(`/auth/sign-in?name=Jane Doe&password=qwerty8`);
+    const headers = {
+      'authorization': token
+    }
+    const {body:data} = await request(app).get(`/auth`).set('authorization', token);
+
+    t.ok(token, 'should exist token');
+    t.deepEqual(data, expected, 'Should get users')
+    t.end()
+})
 
 test('should catch custom error', async (t) => {
   const expected = {
@@ -218,7 +254,6 @@ test('should catch internal error', async (t) => {
   t.equal(status, 500)
   t.deepEqual(body, expected, 'catch internal error');
   t.end();
-
 })
 
 test('should return correct data from injected services without decorators', async (t) => {
@@ -226,14 +261,18 @@ test('should return correct data from injected services without decorators', asy
     injectedService: 'injected as class',
     iInjectedService: 'injected as interface'
   };
-  try {
-    const { body } = await request(app).get(`/some/from-external-service`);
-    t.deepEqual(body, expected, 'Should external data');
-  }
-  catch(e) { t.ifErr(e); }
-  finally { t.end(); }
+  const { body } = await request(app).get(`/some/from-external-service`);
+  t.deepEqual(body, expected, 'Should external data');
+  t.end();
 })
 
+test('should return correct data from injected services without decorators', async (t) => {
+  const { body: foo } = await request(app).get(`/some/factory/foo`);
+  const { body: bar } = await request(app).get(`/some/factory/bar`);
+  t.deepEqual(foo, foo, 'should get foo');
+  t.deepEqual(foo, bar, 'should get bar');
+  t.end();
+})
 // test('exit tests', (t) => {
 //   t.end();
 //   process.exit(0);

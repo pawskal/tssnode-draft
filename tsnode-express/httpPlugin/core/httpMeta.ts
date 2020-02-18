@@ -21,44 +21,51 @@ import { RequestContext } from "../serviceProviders/requestContext";
 import { RouteMeta, RequestArguments } from ".";
 
 export class HttpMeta {
+  public static noop: Function = () => {}
   private static instance: HttpMeta;
   public static getHandler(controllerResolver: ControllerResolver<IGuard, unknown>, method: IMethod): RequestHandler {
-    console.log('(((((((((')
     return async function handler (req: IRequest, res: IResponse, next: NextFunction) {
+      const requestContext: RequestContext = new RequestContext(req, res, next)
+      controllerResolver.inject(requestContext, requestContext)
+      let instance: IHttpController;
+      res.on("finish", () => {
+        instance && instance.onDestroy ? instance.onDestroy() : HttpMeta.noop();
+        requestContext.finished = true;
+        console.log(requestContext.statusCode, 'finish')
+        console.log(requestContext.finished, 'finish')
+
+      });
       try {
-        // await new Promise(r => {
-        //   setTimeout(() => {
-        //     console.log('(((((((((')
-        //   }, 2000)
-        // })
-          // tslint:disable-next-line: no-var-keyword
-          var requestContext: RequestContext = new RequestContext(req, res, next)
-          const { controllerDefinition, guardDefinition } = controllerResolver
-          // controllerResolver.inject(requestContext, new HeadersTest)
-          controllerResolver.inject(requestContext, requestContext)
-           if(guardDefinition) {
-            const guard: IGuard = await controllerResolver.resolve(guardDefinition.guard.name, requestContext)
-            const options = new RouteMeta(controllerDefinition, method)
-            const data = await guard.verify(req, options);
-            data && controllerResolver.inject(requestContext, data)
-            console.log(data, '&&&&')
-            // Object.assign(requestParams, data)
-          }
-          const instance = await controllerResolver.resolve(controllerDefinition.definition.name, requestContext);
-          const requestParams = new RequestArguments(req);
-          res.on("finish", () => {
-            instance && instance.onDestroy ? instance.onDestroy() : instance.noop();
-            requestContext.finished = true;
-          });
-          instance && instance.onInit ? instance.onInit() : instance.noop();
-          const origin: (options: IRequestParams) => any = method.handler || instance.noop;
-          res.result = await origin.call(instance, requestParams) || {};
+        
+        // tslint:disable-next-line: no-var-keyword
+        const { controllerDefinition, guardDefinition } = controllerResolver
+        // controllerResolver.inject(requestContext, new HeadersTest)
+          if(guardDefinition) {
+          const guard: IGuard = await controllerResolver.resolve(guardDefinition.guard.name, requestContext)
+          const options = new RouteMeta(controllerDefinition, method)
+          const data = await guard.verify(req, options);
+          data && controllerResolver.inject(requestContext, data)
+          console.log( '&&&&')
+          // Object.assign(requestParams, data)
+        }
+        instance = await controllerResolver.resolve(controllerDefinition.definition.name, requestContext);
+        const requestParams = new RequestArguments(req);
+        
+        instance.onInit ? await instance.onInit() : HttpMeta.noop();
+        const origin: (options: IRequestParams) => any = method.handler || HttpMeta.noop;
+        res.result = await origin.call(instance, requestParams) || {};
       } catch (e) {
+        console.log('catch error', '***********')
+        requestContext.finished = true
         next(e);
       } finally {
-          process.nextTick(() => requestContext.finished
+          
+          process.nextTick(() => {
+            console.log(requestContext.finished, 'finally')
+          console.log(requestContext.statusCode, 'finally')
+            requestContext.finished
             ? void 0
-            : res.status(requestContext.statusCode).send(res.result));
+            : res.status(requestContext.statusCode).send(res.result)});
       }
     };
   }

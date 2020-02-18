@@ -43,11 +43,6 @@ export interface IResponse<T = unknown> extends Response {
   result?: T;
 }
 
-export interface IAuthDefinition<T> {
-  auth: boolean;
-  options: T;
-}
-
 export interface IGuardDefinition<T extends IGuard, K = unknown> {
   guard: Type<T>;
   options?: K;

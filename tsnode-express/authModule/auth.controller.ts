@@ -5,12 +5,25 @@ import { Controller, Post, Get, Guard } from '../httpPlugin';
 import { ConfigProvider, Injectable, ResolveTypes } from '../../tsnode-core/lib';
 import { IRequestParams, IHttpController } from '../httpPlugin/interfaces';
 import { AuthGuard } from './auth.guard';
+import { BadRequestError } from 'ts-http-errors';
+import { RequestContext } from '../httpPlugin/serviceProviders/requestContext';
+
+class GuardResult {
+  name!: string
+  constructor(opts: any) {
+      Object.assign(this, opts)
+  }
+}
 
 @Guard(AuthGuard)
 @Controller('auth') 
 @Injectable(ResolveTypes.SCOPED)
 export class AuthController implements IHttpController { 
-  constructor(public authService: AuthService, public config: ConfigProvider) {
+  constructor(public authService: AuthService,
+     public config: ConfigProvider,
+     public guardMeta: GuardResult,
+     public currentContext: RequestContext)
+   {
   }
 
   onInit() {}
@@ -21,6 +34,7 @@ export class AuthController implements IHttpController {
       throw new Error('Bad Request');
     }
     this.authService.addUser(query);
+    this.currentContext.statusCode = 201
     return { success: true };
   }
 
@@ -29,14 +43,14 @@ export class AuthController implements IHttpController {
     return this.authService.getUsers();
   }
 
-  @Get(':name')
+  @Get(':name', { roles: ['super', 'admin'] })
   getUser({ params }: IRequestParams<never, never, { name: string }>): any {
     return this.authService.getUser(params.name);
   }
 
   @Get('me', { role: 'default' })
-  me({ auth }: IRequestParams<never, never, never, { auth: any }>): any {
-    return this.authService.getUser(auth.name);
+  me(): any {
+    return this.authService.getUser(this.guardMeta.name);
   }
 
   @Get('sign-in', { useGuard: false })
@@ -44,7 +58,7 @@ export class AuthController implements IHttpController {
     const user: User = this.authService.getUser(query.name);
 
     if(!user || user.password != query.password) {
-      throw new Error('Bad Requsest');
+      throw new BadRequestError('Bad Requsest');
     }
     return {
       token: jwt.sign({ name: user.name }, this.config.secret)
