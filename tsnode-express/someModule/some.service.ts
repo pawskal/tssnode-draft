@@ -1,5 +1,5 @@
 import { InjectedService, IInjectedService } from "../external.service";
-import { Injectable, ConfigProvider } from "../../tsnode-core/lib";
+import { Injectable, ConfigProvider } from "@pskl/di-core";
 import uuidv4 = require("uuidv4");
 
 @Injectable()

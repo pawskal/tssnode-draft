@@ -12,7 +12,7 @@ import { IControllerDefinition,
   IHttpController,
 } from "../interfaces";
 
-import { Type } from "../../../tsnode-core/lib/interfaces";
+import { Type } from "@pslk/di-core/interfaces";
 
 import { HttpMethods } from "..";
 import { ControllerResolver } from "./injectionHelper";
@@ -34,21 +34,13 @@ export class HttpMeta {
       res.on("finish", () => {
         instance && typeof instance.onDestroy === 'function' && instance.onDestroy()
         requestContext.finished = true;
-        console.log(requestContext.statusCode, 'finish')
-        console.log(requestContext.finished, 'finish')
-
       });
       try {
         
-        // tslint:disable-next-line: no-var-keyword
-        // controllerResolver.inject(requestContext, new HeadersTest)
           if(guardDefinition) {
           const guard: IGuard = await controllerResolver.resolve(guardDefinition.guard.name, requestContext)
-          // const options = new RouteMeta(controllerDefinition, method)
           const data = await guard.verify(req, guardDefinition.options);
           data && controllerResolver.inject(requestContext, data)
-          console.log( '&&&&')
-          // Object.assign(requestParams, data)
         }
         instance = await controllerResolver.resolve(controllerDefinition.definition.name, requestContext);
         const requestParams = new RequestArguments(req);
@@ -56,18 +48,12 @@ export class HttpMeta {
         typeof instance.onInit === 'function' && await instance.onInit();
         const origin: (options: IRequestParams) => any = method.handler || HttpMeta.noop;
         res.result = await origin.call(instance, requestParams) || {};
-        console.log(res.result)
       } catch (e) {
-        console.log('catch error', '***********')
         requestContext.finished = true
         next(e);
       } finally {
           
           process.nextTick(() => {
-            console.log(requestContext.finished, 'finally')
-          console.log(requestContext.statusCode, 'finally')
-          console.log(res.result)
-
             requestContext.finished
             ? void 0
             : res.status(requestContext.statusCode).send(res.result)});

@@ -1,17 +1,18 @@
-import { Injectable } from '../../tsnode-core/lib';
+import { Injectable, ResolveTypes } from '@pskl/di-core';
+import { Factory } from '@pskl/di-core/decorators';
+
 import { Controller, Get, Guard, Post } from '../httpPlugin/decorators';
 
 // import { SomeService } from './some.service';
 import { BadRequestError } from 'ts-http-errors';
 import uuidv4 from 'uuidv4';
 import {SomeService} from './some.service';
-import { ResolveTypes } from '../../tsnode-core/lib/interfaces';
+// import { ResolveTypes } from '@pskl/di-core/interfaces';
 import { User } from '../authModule/auth.service';
 import { RouteMeta } from '../httpPlugin/core';
 import { IGuard, IRequest, IRequestParams, IResponse, IHttpController } from '../httpPlugin/interfaces';
 import { HeadersProvider } from '../httpPlugin/serviceProviders/headersProvider';
 import { RequestContext } from '../httpPlugin/serviceProviders/requestContext';
-import { Factory } from '../../tsnode-core/lib/_decorators';
 // import {TestDecorator} from "../simplePlugin";
 
 interface IFooBar {
@@ -78,15 +79,22 @@ export class SomeController implements IHttpController {
         public fooBar: FooBar) {
             
         // console.log(headers.host)
-        // console.log(headers.testHeader, 'TEST HEADER IN CONTROLLER')
+        console.log(headers.testHeader, 'TEST HEADER IN CONTROLLER')
         // console.log({guard}, 'guard')
         console.log(fooBar.uuid, 'TEST FooBar IN CONTROLLER')
         console.log({ fooBar }, fooBar.get(), )
     }
 
-    public onInit() {
-        this.id = uuidv4();
-        console.log('initialized ', this.id);
+    public async onInit() {
+        return new Promise((r) => {
+            setTimeout(() => {
+                this.id = uuidv4();
+                console.log('initialized ', this.id);
+                r()
+
+            })
+        })
+        
     }
 
     public onDestroy() {

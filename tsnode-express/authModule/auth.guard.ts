@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
-import { Injectable, ResolveTypes, ConfigProvider } from "../../tsnode-core/lib";
+import { ResolveTypes, ConfigProvider } from "@pskl/di-core";
+import { Injectable } from "@pskl/di-core/decorators";
 
 import { IGuard } from "../httpPlugin/interfaces";
 import { IRequest } from "../httpPlugin";

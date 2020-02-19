@@ -1,7 +1,7 @@
 import { ConfigProvider } from '../lib';
 import test from 'tape';
 import {TestPlugin, PLUGIN_NAME } from "../example/simplePlugin";
-import { TSNodeCore } from '../lib';
+import { IOCContainer } from '../lib';
 import { application } from '../example';
 import Baz from '../example/Baz';
 import Bar from '../example/Bar';

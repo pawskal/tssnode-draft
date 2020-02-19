@@ -1,6 +1,6 @@
 import cors from 'cors';
 
-import { ConfigProvider} from '../tsnode-core/lib';
+import { ConfigProvider } from '@pskl/di-core';
 import {TSNodeExpress} from './httpPlugin/index'
 
 import * as SomeModule from './someModule';

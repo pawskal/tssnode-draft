@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 
 import { AuthService, User } from "./auth.service";
 import { Controller, Post, Get, Guard } from '../httpPlugin';
-import { ConfigProvider, Injectable, ResolveTypes } from '../../tsnode-core/lib';
+import { ConfigProvider, Injectable, ResolveTypes } from '@pskl/di-core';
 import { IRequestParams, IHttpController } from '../httpPlugin/interfaces';
 import { AuthGuard } from './auth.guard';
 import { BadRequestError } from 'ts-http-errors';

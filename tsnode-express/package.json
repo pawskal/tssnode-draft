@@ -52,6 +52,7 @@
     "@types/express": "^4.16.0",
     "@types/node": "^9.4.7",
     "@types/reflect-metadata": "^0.1.0",
+    "@pskl/di-core": "file:../tsnode-core",
     "dotenv": "^7.0.0",
     "express": "^4.16.3",
     "nodejs-lite-logger": "0.0.13",

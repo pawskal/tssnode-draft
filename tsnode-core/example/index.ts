@@ -1,19 +1,15 @@
-import { TSNodeCore } from '../lib'
+import { IOCContainer } from '../lib'
 import { TestPlugin } from './simplePlugin/plugin';
 import Foo from '../example/Foo'
 import Bar from '../example/Bar'
 import Baz from '../example/Baz'
 
-function setConfig(config, data) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      config.test = 'test config field';
-      resolve();
-    })
-  })
+function setConfig(config) {
+  config.test = 'test config field';
 }
 
-const application = new TSNodeCore();
+const application = new IOCContainer();
+
 application
   .usePlugin(TestPlugin)
   .registerModule(Foo)

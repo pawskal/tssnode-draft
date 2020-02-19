@@ -1,4 +1,4 @@
-import Injector from './_injector'
+import Injector from './injector'
 import { Injection, ResolveTypes, AbstractType } from './interfaces';
 
 const { 

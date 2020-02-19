@@ -1,4 +1,4 @@
-import Injector from "../../../tsnode-core/lib/_injector";
+import Injector from "@pslk/di-core/injector";
 import { IControllerDefinition, IGuardDefinition, IGuard } from "../interfaces";
 
 export class ControllerResolver<T extends IGuard, K = unknown> {

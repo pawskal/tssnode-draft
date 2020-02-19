@@ -1,20 +1,23 @@
-import TSNodeCore from './_application';
+import IOCContainer from './application';
 import { ConfigProvider } from './helpers'
 
-import { Injectable } from './_decorators'
+import { Injectable, Factory } from './decorators'
 
 import {
   IPlugin,
   ResolveTypes,
 } from './interfaces';
 
-import _injector from './_injector';
+import injector from './injector';
 
 export {
-  TSNodeCore,
+  IOCContainer,
   ConfigProvider,
   IPlugin,
   Injectable,
-  _injector,
+  injector,
   ResolveTypes,
+  Factory,
 };
+
+export default IOCContainer

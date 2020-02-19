@@ -1,10 +1,10 @@
-import Injector, { IFacatoryInjection } from './_injector';
+import Injector from './injector';
 import {
     Type, SetConfig, ResolveTypes, AbstractType,
 } from './interfaces';
 import {  ConfigProvider } from './helpers';
 
-class TSNodeCore {
+class IOCContainer {
   public get Injector(): Injector {
     return this._injector;
   }
@@ -70,4 +70,4 @@ class TSNodeCore {
   }
 }
 
-export default TSNodeCore;
+export default IOCContainer;

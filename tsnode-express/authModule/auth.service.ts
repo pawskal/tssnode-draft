@@ -1,4 +1,4 @@
-import { Injectable, ConfigProvider } from "../../tsnode-core/lib";
+import { Injectable, ConfigProvider } from "@pskl/di-core";
 
 export class User {
   constructor(public name: string, public password: string, public role: string) { }

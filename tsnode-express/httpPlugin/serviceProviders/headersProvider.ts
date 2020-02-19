@@ -1,7 +1,7 @@
 import { RequestContext } from './requestContext'
 import { IncomingHttpHeaders } from 'http';
 import uuidv4 from 'uuidv4'
-import { Injectable, ResolveTypes } from '../../../tsnode-core/lib';
+import { Injectable, ResolveTypes } from '@pskl/di-core';
 
 
 @Injectable(ResolveTypes.WEAK)

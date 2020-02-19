@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { PathParams } from 'express-serve-static-core';
 import { IncomingHttpHeaders } from 'http';
-import { Type } from '../../tsnode-core/lib/interfaces';
+import { Type } from '@pskl/di-core/interfaces';
 import { RouteMeta } from './serviceProviders/routeMeta';
 
 export enum HttpMethods {

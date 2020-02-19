@@ -1,7 +1,6 @@
 import 'reflect-metadata'
 import { Type, AbstractType } from './interfaces';
 import { ResolveTypes } from './interfaces';
-import { InternalServerError } from 'ts-http-errors';
 
 const _global = global as any;
 
@@ -102,7 +101,7 @@ export default class Injector {
       }
     } catch (e) {
       console.error(e)
-      throw new InternalServerError(`Unable to resolve injection ${targetName}`)
+      throw new Error(`Unable to resolve injection ${targetName}`)
     }
   }
 

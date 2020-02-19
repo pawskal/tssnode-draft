@@ -3,9 +3,9 @@ import express, { Express, IRouterHandler, IRouterMatcher } from 'express';
 import Router from 'express';
 import { ExtendedError, InternalServerError, NotFoundError } from 'ts-http-errors';
 
-import TSNodeCore from '../../tsnode-core/lib/_application';
+import IOCContainer from '@pskl/di-core';
 
-import { ConfigProvider } from '../../tsnode-core/lib';
+import { ConfigProvider } from '@pskl/di-core';
 import { httpMeta } from './core';
 import { HttpMethods, IControllerDefinition, IGuard, IGuardDefinition, IRequest, IResponse, IRoutes } from './interfaces';
 import { ControllerResolver } from './core/injectionHelper';
@@ -13,7 +13,7 @@ import { HttpMeta } from './core/httpMeta';
 import { NextFunction } from 'express-serve-static-core';
 
 
-class TSNodeExpress extends TSNodeCore {
+class TSNodeExpress extends IOCContainer {
 
   public get controllers(): Map<string, IControllerDefinition> {
     return httpMeta.controllers;

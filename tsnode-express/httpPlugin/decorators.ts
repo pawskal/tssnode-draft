@@ -10,7 +10,7 @@ import {
   TypeFunction, 
   IHttpController} from "./interfaces";
 
-import { Type } from "../../tsnode-core/lib/interfaces";
+import { Type } from "@pslk/di-core/interfaces";
 import { httpMeta } from "./core";
 
 export const Controller = <T extends IHttpController>(name: string): TypeFunction<T> =>

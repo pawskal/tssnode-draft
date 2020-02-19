@@ -1,5 +1,5 @@
 {
-  "name": "tsnode-core",
+  "name": "@pskl/di-core",
   "version": "0.0.1",
   "description": "nodejs express typescript",
   "main": "./dist/index.js",
@@ -7,7 +7,6 @@
   "scripts": {
     "build": "tsc",
     "start": "./node_modules/.bin/ts-node -r dotenv/config ./example/index.ts dotenv_config_path=./example/.env",
-    "dev": "nodemon --exec ./node_modules/.bin/ts-node -- ./example/index.ts",
     "test": "./node_modules/.bin/ts-node -- ./test/test.ts | tap-spec"
   },
   "repository": {
@@ -47,28 +46,28 @@
     "url": "https://github.com/pawskal/tsnode-express.git/issues"
   },
   "homepage": "https://github.com/pawskal/tsnode-express#readme",
-  "dependencies": {
-    "@types/express": "^4.16.0",
-    "@types/node": "^9.4.7",
-    "dotenv": "^7.0.0",
-    "nodejs-lite-logger": "0.0.13",
-    "redis": "^2.8.0",
-    "reflect-metadata": "^0.1.13",
-    "ts-http-errors": "^1.0.0",
-    "ts-node": "^5.0.1",
-    "typescript": "^3.3.3333",
-    "uuidv4": "^4.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "@types/node": "^9.4.7",
     "@types/tape": "^4.2.32",
     "@types/uuidv4": "^2.0.0",
-    "nodemon": "^1.17.1",
+    "reflect-metadata": "^0.1.13",
     "tap-spec": "^5.0.0",
-    "tape": "^4.9.0"
+    "tape": "^4.9.0",
+    "typescript": "^3.3.3333",
+    "ts-node": "^5.0.1"
   },
   "directories": {
     "example": "example",
     "lib": "lib",
-    "test": "test"
+    "test": "test",
+    "dist": "dist"
+  },
+  "files": [
+    "./dist"
+  ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./": "./dist/"
   }
 }

@@ -1,4 +1,4 @@
-import Application from "./_application";
+import Application from "./application";
 import { ConfigProvider } from ".";
 
 export type Type<T> = {
@@ -24,4 +24,3 @@ export type Resolver<T> = (type: Type<T>) => T
 
 export type Injection = (resolveType?: ResolveTypes) => Function
 export type FactoryInjection<N, K extends N = N, T = unknown> = (target: N, factory: (opts: T) => K, resolveType?: ResolveTypes.WEAK_SCOPED | ResolveTypes.WEAK | ResolveTypes.SCOPED) => Function
-

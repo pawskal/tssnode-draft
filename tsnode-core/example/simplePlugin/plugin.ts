@@ -1,4 +1,4 @@
-import {IPlugin, ConfigProvider, TSNodeCore} from "../../lib";
+import {IPlugin, ConfigProvider, IOCContainer} from "../../lib";
 import {success, warning, error, info} from 'nodejs-lite-logger';
 
 @Reflect.metadata('design', 'paramtypes')
@@ -6,7 +6,7 @@ export class TestPlugin implements IPlugin {
 
     private _params: any;
 
-    constructor(public application: TSNodeCore, private config: ConfigProvider) {
+    constructor(public application: IOCContainer, private config: ConfigProvider) {
 
     }
 
