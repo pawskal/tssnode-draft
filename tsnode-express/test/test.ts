@@ -267,10 +267,10 @@ test('should return correct data from injected services without decorators', asy
 })
 
 test('should return correct data from injected services without decorators', async (t) => {
-  const { body: foo } = await request(app).get(`/some/factory/foo`);
-  const { body: bar } = await request(app).get(`/some/factory/bar`);
-  t.deepEqual(foo, foo, 'should get foo');
-  t.deepEqual(foo, bar, 'should get bar');
+  const { text: foo } = await request(app).get(`/some/factory/foo`);
+  const { text: bar } = await request(app).get(`/some/factory/bar`);
+  t.deepEqual(foo, 'foo', 'should get foo');
+  t.deepEqual(bar, 'bar', 'should get bar');
   t.end();
 })
 // test('exit tests', (t) => {

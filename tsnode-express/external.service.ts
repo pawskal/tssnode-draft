@@ -1,4 +1,4 @@
-export class IInjectedService {
+export abstract class IInjectedService {
   stub!: string
 };
 

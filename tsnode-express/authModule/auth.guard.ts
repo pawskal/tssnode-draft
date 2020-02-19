@@ -20,11 +20,11 @@ class GuardResult {
   }
 
 @Injectable(ResolveTypes.SCOPED)
-export class AuthGuard implements IGuard { 
-    constructor(private config: ConfigProvider, private authService: AuthService) {}
-    async verify({ headers }: IRequest, meta: RouteMeta<{roles: string[]}>) {
+export class AuthGuard implements IGuard<{ auth: string }> { 
+    constructor(private config: ConfigProvider, private authService: AuthService, private meta: RouteMeta<{ roles: string[] }>) {}
+    async verify({ headers }: IRequest, meta: { auth: string }) {
         console.log(meta)
-        const {useGuard, roles = []} = meta.requestOptions || {}
+        const {useGuard, roles = []} = this.meta.requestOptions || {}
         if(useGuard == false) {
             return new GuardResult({})
         }
@@ -47,7 +47,7 @@ export class AuthGuard implements IGuard {
             const data: any =  jwt.verify(token, this.config.secret)
             const user = this.authService.getUser(data.name)
             if(roles.length && !roles.includes(user.role)) {
-                throw new ForbiddenError(`Forbidden access for ${meta.fullPath}`)
+                throw new ForbiddenError(`Forbidden access for ${this.meta.fullPath}`)
               }
             return new GuardResult(user);
         // } catch(e) {

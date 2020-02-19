@@ -6,7 +6,6 @@ import {TSNodeExpress} from './httpPlugin/index'
 import * as SomeModule from './someModule';
 import * as AuthModule from './authModule';
 
-// import { AuthProvider } from './authProvider';
 import { InjectedService, IInjectedService } from './external.service';
 
 const injectedService: InjectedService = new InjectedService({ 
@@ -31,7 +30,7 @@ application
   .use(cors())
   .useConfig(setConfig)
   .inject<InjectedService>(injectedService)
-  .inject<IInjectedService, IInjectedService>(IInjectedService, async () => ({ stub: 'injected as interface' }))
+  .inject<IInjectedService, InjectedService>(IInjectedService, async () => ({ stub: 'injected as interface' }))
   .registerModule(SomeModule)
   .registerModule(AuthModule)
 

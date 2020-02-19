@@ -1,6 +1,6 @@
 import Injector, { IFacatoryInjection } from './_injector';
 import {
-    Type, SetConfig, ResolveTypes,
+    Type, SetConfig, ResolveTypes, AbstractType,
 } from './interfaces';
 import {  ConfigProvider } from './helpers';
 
@@ -8,8 +8,6 @@ class TSNodeCore {
   public get Injector(): Injector {
     return this._injector;
   }
-
-  protected exportValues: Array<keyof TSNodeCore> = ['configProvider'];
 
   protected _injector: Injector;
 
@@ -50,20 +48,14 @@ class TSNodeCore {
   }
 
   public inject<T>(instance: T) : this;
-  public inject<T, K extends T>(definition: Type<T>, factory: (configProvider?: ConfigProvider) => K | Promise<K>) : this;
-  public inject<T, K extends T>(definition: Type<T>, factory: (configProvider?: ConfigProvider) => K | Promise<K>, resoleType: ResolveTypes.SCOPED | ResolveTypes.SINGLETON) : this;
+  public inject<T, K extends T>(definition: Type<T> | AbstractType<T>, factory: (configProvider?: ConfigProvider) => K | Promise<K>) : this;
+  public inject<T, K extends T>(definition: Type<T> | AbstractType<T>, factory: (configProvider?: ConfigProvider) => K | Promise<K>, resoleType: ResolveTypes.SCOPED | ResolveTypes.SINGLETON) : this;
   public inject() : this {
     arguments.length == 1 && this._injector.setInstance(arguments[0]);
     arguments.length > 1 && this._injector.setFactory(arguments[0], {
       factory: arguments[1],
       resolveType: arguments[2] || ResolveTypes.SCOPED
     });
-    return this;
-  }
-
-  public addExportValue<T extends TSNodeCore>(value: keyof T): TSNodeCore {
-    const v = value as keyof TSNodeCore
-    this.exportValues = [v, ...this.exportValues];
     return this;
   }
 

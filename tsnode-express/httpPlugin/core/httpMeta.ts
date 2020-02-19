@@ -21,15 +21,18 @@ import { RequestContext } from "../serviceProviders/requestContext";
 import { RouteMeta, RequestArguments } from ".";
 
 export class HttpMeta {
-  public static noop: Function = () => {}
+  public static noop: () => any = () => {}
   private static instance: HttpMeta;
   public static getHandler(controllerResolver: ControllerResolver<IGuard, unknown>, method: IMethod): RequestHandler {
     return async function handler (req: IRequest, res: IResponse, next: NextFunction) {
       const requestContext: RequestContext = new RequestContext(req, res, next)
       controllerResolver.inject(requestContext, requestContext)
+      const { controllerDefinition, guardDefinition } = controllerResolver
+
+      controllerResolver.inject(requestContext, new RouteMeta(controllerDefinition, method))
       let instance: IHttpController;
       res.on("finish", () => {
-        instance && instance.onDestroy ? instance.onDestroy() : HttpMeta.noop();
+        instance && typeof instance.onDestroy === 'function' && instance.onDestroy()
         requestContext.finished = true;
         console.log(requestContext.statusCode, 'finish')
         console.log(requestContext.finished, 'finish')
@@ -38,12 +41,11 @@ export class HttpMeta {
       try {
         
         // tslint:disable-next-line: no-var-keyword
-        const { controllerDefinition, guardDefinition } = controllerResolver
         // controllerResolver.inject(requestContext, new HeadersTest)
           if(guardDefinition) {
           const guard: IGuard = await controllerResolver.resolve(guardDefinition.guard.name, requestContext)
-          const options = new RouteMeta(controllerDefinition, method)
-          const data = await guard.verify(req, options);
+          // const options = new RouteMeta(controllerDefinition, method)
+          const data = await guard.verify(req, guardDefinition.options);
           data && controllerResolver.inject(requestContext, data)
           console.log( '&&&&')
           // Object.assign(requestParams, data)
@@ -51,9 +53,10 @@ export class HttpMeta {
         instance = await controllerResolver.resolve(controllerDefinition.definition.name, requestContext);
         const requestParams = new RequestArguments(req);
         
-        instance.onInit ? await instance.onInit() : HttpMeta.noop();
+        typeof instance.onInit === 'function' && await instance.onInit();
         const origin: (options: IRequestParams) => any = method.handler || HttpMeta.noop;
         res.result = await origin.call(instance, requestParams) || {};
+        console.log(res.result)
       } catch (e) {
         console.log('catch error', '***********')
         requestContext.finished = true
@@ -63,6 +66,8 @@ export class HttpMeta {
           process.nextTick(() => {
             console.log(requestContext.finished, 'finally')
           console.log(requestContext.statusCode, 'finally')
+          console.log(res.result)
+
             requestContext.finished
             ? void 0
             : res.status(requestContext.statusCode).send(res.result)});

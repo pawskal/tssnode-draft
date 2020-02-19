@@ -38,12 +38,16 @@ class GuardResult {
 }
 
 // function fooBarFactory
-
+@Factory<FooBar, IBar | IFoo, RequestContext>(FooBar, ({ request }) => {
+    console.log(request.params)
+    return request.params.factory === 'foo' ? new IFoo : new IBar
+}, ResolveTypes.WEAK_SCOPED)
 @Injectable(ResolveTypes.WEAK_SCOPED)
 class Foo implements IGuard {
     public guardId: string = uuidv4()
-    constructor(public headers: HeadersProvider) {
+    constructor(public headers: HeadersProvider, public fooBar: FooBar) {
         console.log(headers.testHeader, 'TEST HEADER IN GUARD')
+        console.log(fooBar.uuid, 'TEST FooBar IN GUARD')
         // headers['auth']
     }
     public verify(req: IRequest, options: RouteMeta<{ role: string }>) {
@@ -58,11 +62,12 @@ class Foo implements IGuard {
 
 @Guard(Foo)
 @Controller('some')
-@Factory<FooBar, IBar, RequestContext>(FooBar, ({ request }) => {
-    console.log(request.path)
-    return request.params === 'foo' ? new IFoo : new IBar
-}, ResolveTypes.WEAK_SCOPED)
+// @Factory<FooBar, IBar | IFoo, RequestContext>(FooBar, ({ request }) => {
+//     console.log(request.params)
+//     return request.params.factory === 'foo' ? new IFoo : new IBar
+// }, ResolveTypes.WEAK_SCOPED)
 @Injectable(ResolveTypes.SCOPED)
+
 export class SomeController implements IHttpController {
     public id!: string;
     constructor(
@@ -75,7 +80,8 @@ export class SomeController implements IHttpController {
         // console.log(headers.host)
         // console.log(headers.testHeader, 'TEST HEADER IN CONTROLLER')
         // console.log({guard}, 'guard')
-        console.log({ fooBar }, fooBar.get())
+        console.log(fooBar.uuid, 'TEST FooBar IN CONTROLLER')
+        console.log({ fooBar }, fooBar.get(), )
     }
 
     public onInit() {

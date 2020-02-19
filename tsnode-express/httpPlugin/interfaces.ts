@@ -26,8 +26,8 @@ export type IRequestParams<B = {}, Q = {}, P = {}> = {
 
 export type IRequest<B = {}, Q = {}, P = {}> = IRequestParams<B, Q, P> & Request;
 
-export interface IGuard<K = unknown> {
-   verify<T>(req: IRequest<T>, options: RouteMeta): K;
+export interface IGuard<N = unknown, K = unknown> {
+   verify<T>(req: IRequest<T>, options: N): K;
 }
 
 export interface IUseGuard {
