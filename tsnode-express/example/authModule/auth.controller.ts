@@ -1,12 +1,12 @@
 import jwt from 'jsonwebtoken';
 
 import { AuthService, User } from "./auth.service";
-import { Controller, Post, Get, Guard } from '../httpPlugin';
+import { Controller, Post, Get, Guard } from '@pskl/ts-http-express';
 import { ConfigProvider, Injectable, ResolveTypes } from '@pskl/di-core';
-import { IRequestParams, IHttpController } from '../httpPlugin/interfaces';
+import { IRequestParams, IHttpController } from '@pskl/ts-http-express';
 import { AuthGuard } from './auth.guard';
 import { BadRequestError } from 'ts-http-errors';
-import { RequestContext } from '../httpPlugin/serviceProviders/requestContext';
+import { RequestContext } from '@pskl/ts-http-express';
 
 class GuardResult {
   name!: string
@@ -15,7 +15,7 @@ class GuardResult {
   }
 }
 
-@Guard(AuthGuard)
+@Guard(AuthGuard, {auth: 'string'})
 @Controller('auth') 
 @Injectable(ResolveTypes.SCOPED)
 export class AuthController implements IHttpController { 

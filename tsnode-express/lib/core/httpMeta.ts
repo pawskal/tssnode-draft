@@ -1,3 +1,5 @@
+import { Type } from "@pskl/di-core";
+
 import { IControllerDefinition,
   IGuard,
   IGuardDefinition,
@@ -10,15 +12,14 @@ import { IControllerDefinition,
   IResponse,
   IRequestParams,
   IHttpController,
-} from "../interfaces";
+} from "../types";
 
-import { Type } from "@pslk/di-core/interfaces";
 
 import { HttpMethods } from "..";
 import { ControllerResolver } from "./injectionHelper";
 import { RequestHandler, NextFunction } from "express-serve-static-core";
 import { RequestContext } from "../serviceProviders/requestContext";
-import { RouteMeta, RequestArguments } from ".";
+import { RouteMeta, RequestArguments } from "../core";
 
 export class HttpMeta {
   public static noop: () => any = () => {}
@@ -52,7 +53,6 @@ export class HttpMeta {
         requestContext.finished = true
         next(e);
       } finally {
-          
           process.nextTick(() => {
             requestContext.finished
             ? void 0

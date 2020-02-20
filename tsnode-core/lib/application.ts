@@ -1,7 +1,7 @@
-import Injector from './injector';
+import { Injector } from './injector';
 import {
     Type, SetConfig, ResolveTypes, AbstractType,
-} from './interfaces';
+} from './types';
 import {  ConfigProvider } from './helpers';
 
 class IOCContainer {

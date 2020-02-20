@@ -1,7 +1,7 @@
 import cors from 'cors';
 
 import { ConfigProvider } from '@pskl/di-core';
-import {TSNodeExpress} from './httpPlugin/index'
+import TSHttpExpress from '@pskl/ts-http-express'
 
 import * as SomeModule from './someModule';
 import * as AuthModule from './authModule';
@@ -13,7 +13,7 @@ const injectedService: InjectedService = new InjectedService({
 });
 
 function setConfig(config: ConfigProvider) {
-      config.test = 'test config field';
+  console.log(config)
       config.secret = 'SUPER SECRET'
       config.logLevels = ['info', 'success', 'error', 'warning'];
       config.printStack = false;
@@ -22,9 +22,10 @@ function setConfig(config: ConfigProvider) {
       config.redisPort = process.env.REDIS_PORT;
       config.redisPassword = process.env.REDIS_PASS;
       config.transportChannel = 'example';
+      config.test = 'test config field';
 }
 
-const application = new TSNodeExpress();
+const application = new TSHttpExpress();
 
 application
   .use(cors())

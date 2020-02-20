@@ -1,6 +1,6 @@
 import 'reflect-metadata'
-import { Type, AbstractType } from './interfaces';
-import { ResolveTypes } from './interfaces';
+import { Type, AbstractType } from './types';
+import { ResolveTypes } from './types';
 
 const _global = global as any;
 
@@ -14,7 +14,7 @@ export interface IFacatoryInjection<T> {
   resolveType: ResolveTypes;
 }
 
-export default class Injector {
+export class Injector {
   public static getInstance(): Injector {
     return new Injector();
   }

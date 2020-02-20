@@ -7,13 +7,13 @@ import IOCContainer from '@pskl/di-core';
 
 import { ConfigProvider } from '@pskl/di-core';
 import { httpMeta } from './core';
-import { HttpMethods, IControllerDefinition, IGuard, IGuardDefinition, IRequest, IResponse, IRoutes } from './interfaces';
+import { HttpMethods, IControllerDefinition, IGuard, IGuardDefinition, IRequest, IResponse, IRoutes } from './types';
 import { ControllerResolver } from './core/injectionHelper';
 import { HttpMeta } from './core/httpMeta';
 import { NextFunction } from 'express-serve-static-core';
 
 
-class TSNodeExpress extends IOCContainer {
+class TSHttpExpress extends IOCContainer {
 
   public get controllers(): Map<string, IControllerDefinition> {
     return httpMeta.controllers;
@@ -22,12 +22,13 @@ class TSNodeExpress extends IOCContainer {
   public get guards(): Map<string, IGuardDefinition<IGuard, unknown>> {
     return httpMeta.guards;
   }
+
   public express: Express;
 
-  public use: IRouterHandler<TSNodeExpress> & IRouterMatcher<TSNodeExpress>;
+  public use: IRouterHandler<TSHttpExpress> & IRouterMatcher<TSHttpExpress>;
 
   protected router: Express;
-  // protected injectionHelper = new ControllerResolver(this._injector)
+
   constructor(cb?: Function) {
     super();
     this.express = express();
@@ -36,7 +37,7 @@ class TSNodeExpress extends IOCContainer {
 
     cb ? cb(this.express) : void 0;
 
-    this.use = function(): TSNodeExpress {
+    this.use = function(): TSHttpExpress {
       this.express.use(...arguments);
       return this;
     };
@@ -59,7 +60,6 @@ class TSNodeExpress extends IOCContainer {
     console.log('handleError')
     const { configProvider }: ConfigProvider = this;
     if (err.statusCode) {
-      console.log(err)
       configProvider.logLevels.includes('warning')
         && console.warn(err.name, '\t', configProvider.printStack ? err : err.message);
       res.status(err.statusCode).send(err.toJSON());
@@ -117,4 +117,4 @@ class TSNodeExpress extends IOCContainer {
   }
 }
 
-export default TSNodeExpress;
+export default TSHttpExpress;

@@ -1,11 +1,10 @@
 import jwt from 'jsonwebtoken'
-import { ResolveTypes, ConfigProvider } from "@pskl/di-core";
-import { Injectable } from "@pskl/di-core/decorators";
+import { ResolveTypes, ConfigProvider, Injectable } from "@pskl/di-core";
 
-import { IGuard } from "../httpPlugin/interfaces";
-import { IRequest } from "../httpPlugin";
+import { IGuard } from "../../lib/types";
+import { IRequest } from "../../lib";
 import { AuthService } from ".";
-import { RouteMeta } from '../httpPlugin/core';
+import { RouteMeta } from '../../lib/core';
 import { UnauthorizedError, ForbiddenError, BadRequestError } from 'ts-http-errors';
 
 function hightLoad(i = 0) {

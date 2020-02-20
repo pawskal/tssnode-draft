@@ -1,5 +1,5 @@
-import Injector from "@pslk/di-core/injector";
-import { IControllerDefinition, IGuardDefinition, IGuard } from "../interfaces";
+import { Injector } from "@pskl/di-core";
+import { IControllerDefinition, IGuardDefinition, IGuard } from "../types";
 
 export class ControllerResolver<T extends IGuard, K = unknown> {
   public resolve: Function;

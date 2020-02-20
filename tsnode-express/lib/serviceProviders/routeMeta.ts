@@ -1,6 +1,6 @@
 import { PathParams } from 'express-serve-static-core';
 
-import { IControllerDefinition, IMethod, IRequestOptions } from '../interfaces';
+import { IControllerDefinition, IMethod, IRequestOptions } from '../types';
 
 export class RouteMeta<T = unknown> {
   public controllerName: string;

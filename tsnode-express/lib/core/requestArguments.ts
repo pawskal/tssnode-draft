@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import { IncomingHttpHeaders } from 'http';
-import { IRequestArguments } from '../interfaces';
+import { IRequestArguments } from '../types';
 
 export class RequestArguments implements IRequestArguments {
   public body: any;

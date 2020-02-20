@@ -1,7 +1,6 @@
-import { Injectable, ResolveTypes } from '@pskl/di-core';
-import { Factory } from '@pskl/di-core/decorators';
+import { Injectable, ResolveTypes, Factory } from '@pskl/di-core';
 
-import { Controller, Get, Guard, Post } from '../httpPlugin/decorators';
+import { Controller, Get, Guard, Post } from '@pskl/ts-http-express';
 
 // import { SomeService } from './some.service';
 import { BadRequestError } from 'ts-http-errors';
@@ -9,10 +8,10 @@ import uuidv4 from 'uuidv4';
 import {SomeService} from './some.service';
 // import { ResolveTypes } from '@pskl/di-core/interfaces';
 import { User } from '../authModule/auth.service';
-import { RouteMeta } from '../httpPlugin/core';
-import { IGuard, IRequest, IRequestParams, IResponse, IHttpController } from '../httpPlugin/interfaces';
-import { HeadersProvider } from '../httpPlugin/serviceProviders/headersProvider';
-import { RequestContext } from '../httpPlugin/serviceProviders/requestContext';
+import { RouteMeta } from '@pskl/ts-http-express';
+import { IGuard, IRequest, IRequestParams, IResponse, IHttpController } from '@pskl/ts-http-express';
+import { HeadersProvider } from '@pskl/ts-http-express';
+import { RequestContext } from '@pskl/ts-http-express';
 // import {TestDecorator} from "../simplePlugin";
 
 interface IFooBar {

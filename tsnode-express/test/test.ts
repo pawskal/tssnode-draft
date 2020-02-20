@@ -1,10 +1,9 @@
 import test from 'tape';
-import { Express } from 'express'
 import request from 'supertest';
-import application from '../server'
-import { TSNodeExpress } from '../httpPlugin';
+import application from '../example/server'
+import { TSHttpExpress } from '../lib';
 
-const { express: app }: TSNodeExpress = application.setup()
+const { express: app }: TSHttpExpress = application.setup()
 
 test('server should be live', async (t) => {
   const { body } = await request(app).get(`/health`);

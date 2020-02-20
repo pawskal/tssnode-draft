@@ -1,16 +1,13 @@
+import { Type } from "@pskl/di-core";
+
 import {
   HttpMethods,
-  IControllerDefinition,
   IGuard,
-  IGuardDefinition,
-  IMethod,
-  IPropertyDescriptor,
   IRequestOptions,
-  IRoutes,
   TypeFunction, 
-  IHttpController} from "./interfaces";
+  IHttpController
+} from "./types";
 
-import { Type } from "@pslk/di-core/interfaces";
 import { httpMeta } from "./core";
 
 export const Controller = <T extends IHttpController>(name: string): TypeFunction<T> =>
@@ -34,6 +31,3 @@ export const Delete = <T>(path: string, requestOptions?: IRequestOptions<T>) =>
 export const Guard = <T extends IGuard, K>(type: Type<T>, options?: K) =>
   httpMeta.GuardDecorator.call(httpMeta, type, options);
 
-// export const Before: Function = httpMeta.RouteDecorator.bind(httpMeta, 'before');
-
-// export const After: Function = httpMeta.RouteDecorator.bind(httpMeta, 'after');

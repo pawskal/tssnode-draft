@@ -129,8 +129,6 @@ application.useConfig((config) => {
   config.test = 'test config field';
 });
 ```
-##### Notice the `useConfig` method can be async and used in chain
-
 #### Modify your service or controller
 
 ```typescript

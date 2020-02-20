@@ -1,5 +1,5 @@
-import Injector from './injector'
-import { Injection, ResolveTypes, AbstractType } from './interfaces';
+import {Injector} from './injector'
+import { Injection, ResolveTypes, AbstractType } from './types';
 
 const { 
   InjectableDecorator,
