@@ -5,40 +5,40 @@ import { IControllerDefinition,
   IGuardDefinition,
   IMethod,
   IPropertyDescriptor,
-  IRequestOptions,
   IRoutes,
   TypeFunction,
   IRequest,
   IResponse,
   IRequestParams,
   IHttpController,
+  RouteFunction,
 } from "../types";
 
 
 import { HttpMethods } from "..";
 import { ControllerResolver } from "./injectionHelper";
 import { RequestHandler, NextFunction } from "express-serve-static-core";
-import { RequestContext } from "../serviceProviders/requestContext";
-import { RouteMeta, RequestArguments } from "../core";
+import { RequestContext, RouteMeta } from "../serviceProviders";
+import { RequestArguments } from "../core";
 
 export class HttpMeta {
   public static noop: () => any = () => {}
   private static instance: HttpMeta;
-  public static getHandler(controllerResolver: ControllerResolver<IGuard, unknown>, method: IMethod): RequestHandler {
+  public static getHandler(controllerResolver: ControllerResolver<IGuard>, method: IMethod): RequestHandler {
     return async function handler (req: IRequest, res: IResponse, next: NextFunction) {
-      const requestContext: RequestContext = new RequestContext(req, res, next)
+      res.on("finish", () => {
+        instance && typeof instance.onDestroy === 'function' && instance.onDestroy()
+        requestContext.finished = true;
+      });
+      const requestContext = new RequestContext(req, res, next)
       controllerResolver.inject(requestContext, requestContext)
       const { controllerDefinition, guardDefinition } = controllerResolver
 
       controllerResolver.inject(requestContext, new RouteMeta(controllerDefinition, method))
       let instance: IHttpController;
-      res.on("finish", () => {
-        instance && typeof instance.onDestroy === 'function' && instance.onDestroy()
-        requestContext.finished = true;
-      });
+      
       try {
-        
-          if(guardDefinition) {
+        if(guardDefinition) {
           const guard: IGuard = await controllerResolver.resolve(guardDefinition.guard.name, requestContext)
           const data = await guard.verify(req, guardDefinition.options);
           data && controllerResolver.inject(requestContext, data)
@@ -61,7 +61,7 @@ export class HttpMeta {
     };
   }
   public controllers: Map<string, IControllerDefinition> = new Map<string, IControllerDefinition>();
-  public guards: Map<string, IGuardDefinition<IGuard, unknown>> = new Map<string, IGuardDefinition<IGuard, unknown>>();
+  public guards: Map<string, IGuardDefinition<IGuard>> = new Map<string, IGuardDefinition<IGuard>>();
   
   constructor() {
     return HttpMeta.instance || (HttpMeta.instance = this);
@@ -86,14 +86,14 @@ export class HttpMeta {
     };
   }
 
-  public RouteDecorator<T>(method: HttpMethods, path: string, requestOptions?: IRequestOptions<T>): Function {
+  public RouteDecorator<T>(method: HttpMethods, path: string, requestOptions?: T): RouteFunction<IHttpController> {
     return (target: Type<any>, fname: string, descriptor: IPropertyDescriptor): void =>
       this.defineRoute(method, target, path, fname, descriptor, requestOptions);
   }
 
   public defineRoute<T>(method: HttpMethods, target: Type<IHttpController>,
                         defaultPath: string, fname: string,
-                        descriptor: IPropertyDescriptor, requestOptions?: IRequestOptions<T>): void {
+                        descriptor: IPropertyDescriptor, requestOptions?: T): void {
     if (!this.controllers.has(target.constructor.name)) {
       this.controllers.set(target.constructor.name, {
         basePath: "",
@@ -111,7 +111,6 @@ export class HttpMeta {
     Object.assign(methodDefinition, {
       name: fname,
       handler: descriptor.value,
-      guard: requestOptions && requestOptions.useGuard,
       path,
       method,
       requestOptions,

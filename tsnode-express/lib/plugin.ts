@@ -91,7 +91,7 @@ class TSHttpExpress extends IOCContainer {
   protected buildController(controllerDefinition: IControllerDefinition): void {
     const { configProvider }: ConfigProvider = this;
     const guardDefinition = this.getControllerGuard(controllerDefinition)!
-    const controllerResolver = new ControllerResolver<IGuard, unknown>(this._injector, controllerDefinition, guardDefinition)
+    const controllerResolver = new ControllerResolver<IGuard>(this._injector, controllerDefinition, guardDefinition)
     const router = Router();
     const { routes, basePath = '/' } = controllerDefinition;
     new Map<string, IRoutes>([...routes.entries()]

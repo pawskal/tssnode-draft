@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { PathParams } from 'express-serve-static-core';
 import { IncomingHttpHeaders } from 'http';
 import { Type } from '@pskl/di-core';
-import { RouteMeta } from './serviceProviders/routeMeta';
 
 export enum HttpMethods {
   GET = 'get',
@@ -14,11 +13,12 @@ export enum HttpMethods {
   OPTIONS = 'options',
 }
 
+export type IRequestHandler = (options: IRequestParams) => any;
+
 export interface IHttpController extends IOnInit, IOnDestroy {}
 
 export type IRequestParams<B = {}, Q = {}, P = {}> = {
   body: B;
-  // [s: string]: keyof T;
   params: P;
   query: Q;
   headers: IncomingHttpHeaders;
@@ -26,44 +26,38 @@ export type IRequestParams<B = {}, Q = {}, P = {}> = {
 
 export type IRequest<B = {}, Q = {}, P = {}> = IRequestParams<B, Q, P> & Request;
 
-export interface IGuard<N = unknown, K = unknown> {
-   verify<T>(req: IRequest<T>, options: N): K;
+export interface IGuard<N = unknown> {
+   verify<T>(req: IRequest<T>, options: N): any;
 }
 
-export interface IUseGuard {
-  useGuard?: boolean;
-}
-
-export interface IProviderDefinition<T> {
+export type IProviderDefinition<T> = {
   name: string;
   instance: T;
 }
 
-export interface IResponse<T = unknown> extends Response {
+export type IResponse<T = unknown> = {
   result?: T;
-}
+} & Response
 
-export interface IGuardDefinition<T extends IGuard, K = unknown> {
+export type IGuardDefinition<T extends IGuard, K = unknown> = {
   guard: Type<T>;
   options?: K;
 }
 
 export interface IRequestArguments extends IRequestParams {}
 
-export interface IControllerDefinition {
+export type IControllerDefinition = {
   basePath: PathParams;
   routes: Map<string, IRoutes>;
   definition: Type<IHttpController>;
 }
 
-export type IRequestOptions<T> = T & IUseGuard;
-
-export interface IMethod<T = unknown> extends IUseGuard {
+export type IMethod<T = unknown> = {
   name: string;
-  handler: (options: IRequestParams) => any;
+  handler: IRequestHandler;
   path: string;
   method: HttpMethods;
-  requestOptions: IRequestOptions<T>;
+  requestOptions: T;
 }
 
 export type IRoutes = {
@@ -78,11 +72,11 @@ export interface IOnDestroy {
   onDestroy?(): void;
 }
 
-export interface IPropertyDescriptor extends PropertyDecorator {
-  value: (options: IRequestParams) => any;
-}
+export type IPropertyDescriptor = {
+  value: IRequestHandler;
+} & PropertyDecorator
 
-export interface IControllerResolver<T extends IGuard, K = unknown> {
+export type IControllerResolver<T extends IGuard, K = unknown> = {
   controller: IControllerDefinition;
   guard: IGuardDefinition<T, K>;
 }
