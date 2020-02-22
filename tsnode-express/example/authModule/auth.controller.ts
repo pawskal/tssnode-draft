@@ -6,7 +6,7 @@ import { ConfigProvider, Injectable, ResolveTypes } from '@pskl/di-core';
 import { IRequestParams, IHttpController } from '@pskl/ts-http-express';
 import { AuthGuard } from './auth.guard';
 import { BadRequestError } from 'ts-http-errors';
-import { RequestContext } from '@pskl/ts-http-express';
+import { CurrentContext } from '@pskl/ts-http-express';
 
 class GuardResult {
   name!: string
@@ -22,7 +22,7 @@ export class AuthController implements IHttpController {
   constructor(public authService: AuthService,
      public config: ConfigProvider,
      public guardMeta: GuardResult,
-     public currentContext: RequestContext)
+     public currentContext: CurrentContext)
    {
   }
 

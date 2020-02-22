@@ -8,7 +8,7 @@
     "build": "tsc",
     "start": "./node_modules/.bin/ts-node -r dotenv/config ./example/index.ts dotenv_config_path=./example/.env",
     "dev": "nodemon --exec ./node_modules/.bin/ts-node -- ./index.ts",
-    "test": "export PORT=3000 && ./node_modules/.bin/ts-node -- ./test/test.ts | tap-spec"
+    "test": "./node_modules/.bin/ts-node -- ./test/test.ts | tap-spec"
   },
   "repository": {
     "type": "git",

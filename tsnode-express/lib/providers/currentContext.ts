@@ -1,7 +1,7 @@
 import { NextFunction } from "express-serve-static-core"
 import { Request, Response } from "express";
 
-export class RequestContext {
+export class CurrentContext {
   public finished: boolean = false;
   public statusCode: number = 200;
   constructor(

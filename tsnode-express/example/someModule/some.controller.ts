@@ -11,7 +11,7 @@ import { User } from '../authModule/auth.service';
 import { RouteMeta } from '@pskl/ts-http-express';
 import { IGuard, IRequest, IRequestParams, IHttpController } from '@pskl/ts-http-express';
 import { HeadersProvider } from '@pskl/ts-http-express';
-import { RequestContext } from '@pskl/ts-http-express';
+import { CurrentContext } from '@pskl/ts-http-express';
 // import {TestDecorator} from "../simplePlugin";
 
 interface IFooBar {
@@ -38,7 +38,7 @@ class GuardResult {
 }
 
 // function fooBarFactory
-@Factory<FooBar, IBar | IFoo, RequestContext>(FooBar, ({ request }) => {
+@Factory<FooBar, IBar | IFoo, CurrentContext>(FooBar, ({ request }) => {
     console.log(request.params)
     return request.params.factory === 'foo' ? new IFoo : new IBar
 }, ResolveTypes.WEAK_SCOPED)
@@ -61,7 +61,7 @@ class Foo implements IGuard {
 }
 
 @Guard(Foo)
-// @Factory<FooBar, IBar | IFoo, RequestContext>(FooBar, ({ request }) => {
+// @Factory<FooBar, IBar | IFoo, CurrentContext>(FooBar, ({ request }) => {
 //     console.log(request.params)
 //     return request.params.factory === 'foo' ? new IFoo : new IBar
 // }, ResolveTypes.WEAK_SCOPED)
@@ -71,7 +71,7 @@ export class SomeController {
     public id!: string;
     constructor(
         public someService: SomeService,
-        public requestContext: RequestContext,
+        public CurrentContext: CurrentContext,
         public headers: HeadersProvider,
         public guard: GuardResult,
         public fooBar: FooBar) {
@@ -124,8 +124,8 @@ export class SomeController {
 
     @Get('/single-after-hook/:param')
     public singleAfterHook() {
-        this.requestContext.response.setHeader('custom', 'custom')
-        this.requestContext.response.send({ break: `response closed manually` });
+        this.CurrentContext.response.setHeader('custom', 'custom')
+        this.CurrentContext.response.send({ break: `response closed manually` });
     }
 
     @Get<{ data: string }>('/custom-error', { data: 'true' })

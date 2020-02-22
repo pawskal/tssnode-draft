@@ -1,7 +1,7 @@
 import test from 'tape';
 import request from 'supertest';
 import application from '../example/server'
-import { TSHttpExpress } from '../lib';
+import TSHttpExpress from '@pskl/ts-http-express';
 
 const { express: app }: TSHttpExpress = application.setup()
 

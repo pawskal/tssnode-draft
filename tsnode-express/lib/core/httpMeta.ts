@@ -10,55 +10,55 @@ import {
   IRequest,
   IResponse,
   IHttpController,
+  HttpMethods,
 } from "../types";
 
 
-import { HttpMethods } from "..";
 import { ControllerResolver } from "./injectionHelper";
 import { RequestHandler, NextFunction } from "express-serve-static-core";
-import { RequestContext } from "../serviceProviders/requestContext";
-import { RouteMeta, RequestArguments } from "../core";
+import { CurrentContext, RouteMeta } from "../providers";
+import { RequestArguments } from "./requestArguments";
 
 export class HttpMeta {
   public static noop: () => any = () => {}
   private static instance: HttpMeta;
   public static getHandler(controllerResolver: ControllerResolver<IGuard, unknown>, method: IMethod): RequestHandler {
     return async function handler (req: IRequest, res: IResponse, next: NextFunction) {
-      const requestContext: RequestContext = new RequestContext(req, res, next)
-      controllerResolver.inject(requestContext, requestContext)
+      const currentContext: CurrentContext = new CurrentContext(req, res, next)
+      controllerResolver.inject(currentContext, currentContext)
       const { controllerDefinition, guardDefinition } = controllerResolver
 
-      controllerResolver.inject(requestContext, new RouteMeta(controllerDefinition, method))
+      controllerResolver.inject(currentContext, new RouteMeta(controllerDefinition, method))
       let instance: IHttpController;
       res.on("finish", () => {
         instance && typeof instance.onDestroy === 'function' && instance.onDestroy()
-        requestContext.finished = true;
+        currentContext.finished = true;
       });
       try {
         if(guardDefinition) {
-          const guard: IGuard = await controllerResolver.resolve(guardDefinition.guard.name, requestContext)
+          const guard: IGuard = await controllerResolver.resolve(guardDefinition.guard.name, currentContext)
           const data = await guard.verify(req, guardDefinition.options);
-          data && controllerResolver.inject(requestContext, data)
+          data && controllerResolver.inject(currentContext, data)
         }
-        instance = await controllerResolver.resolve(controllerDefinition.definition.name, requestContext);
+        instance = await controllerResolver.resolve(controllerDefinition.definition.name, currentContext);
         const requestParams = new RequestArguments(req);
         
         typeof instance.onInit === 'function' && await instance.onInit();
         const origin = method.handler || HttpMeta.noop;
         res.result = await origin.call(instance, requestParams) || {};
       } catch (e) {
-        requestContext.finished = true
+        currentContext.finished = true
         next(e);
       } finally {
           process.nextTick(() => {
-            requestContext.finished
+            currentContext.finished
             ? void 0
-            : res.status(requestContext.statusCode).send(res.result)});
+            : res.status(currentContext.statusCode).send(res.result)});
       }
     };
   }
   public controllers: Map<string, IControllerDefinition> = new Map<string, IControllerDefinition>();
-  public guards: Map<string, IGuardDefinition<IGuard, unknown>> = new Map<string, IGuardDefinition<IGuard, unknown>>();
+  public guards: Map<string, IGuardDefinition<IGuard>> = new Map<string, IGuardDefinition<IGuard>>();
   
   constructor() {
     return HttpMeta.instance || (HttpMeta.instance = this);
