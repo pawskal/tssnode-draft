@@ -1,16 +1,14 @@
-import { Type } from "@pskl/di-core";
+import { Type, TypeFunction } from "@pskl/di-core";
 
-import { IControllerDefinition,
+import { 
+  IControllerDefinition,
   IGuard,
   IGuardDefinition,
   IMethod,
   IPropertyDescriptor,
-  IRequestOptions,
   IRoutes,
-  TypeFunction,
   IRequest,
   IResponse,
-  IRequestParams,
   IHttpController,
 } from "../types";
 
@@ -37,8 +35,7 @@ export class HttpMeta {
         requestContext.finished = true;
       });
       try {
-        
-          if(guardDefinition) {
+        if(guardDefinition) {
           const guard: IGuard = await controllerResolver.resolve(guardDefinition.guard.name, requestContext)
           const data = await guard.verify(req, guardDefinition.options);
           data && controllerResolver.inject(requestContext, data)
@@ -47,7 +44,7 @@ export class HttpMeta {
         const requestParams = new RequestArguments(req);
         
         typeof instance.onInit === 'function' && await instance.onInit();
-        const origin: (options: IRequestParams) => any = method.handler || HttpMeta.noop;
+        const origin = method.handler || HttpMeta.noop;
         res.result = await origin.call(instance, requestParams) || {};
       } catch (e) {
         requestContext.finished = true
@@ -86,14 +83,14 @@ export class HttpMeta {
     };
   }
 
-  public RouteDecorator<T>(method: HttpMethods, path: string, requestOptions?: IRequestOptions<T>): Function {
+  public RouteDecorator<T>(method: HttpMethods, path: string, requestOptions?: T): Function {
     return (target: Type<any>, fname: string, descriptor: IPropertyDescriptor): void =>
       this.defineRoute(method, target, path, fname, descriptor, requestOptions);
   }
 
   public defineRoute<T>(method: HttpMethods, target: Type<IHttpController>,
                         defaultPath: string, fname: string,
-                        descriptor: IPropertyDescriptor, requestOptions?: IRequestOptions<T>): void {
+                        descriptor: IPropertyDescriptor, requestOptions?: T): void {
     if (!this.controllers.has(target.constructor.name)) {
       this.controllers.set(target.constructor.name, {
         basePath: "",
@@ -111,7 +108,6 @@ export class HttpMeta {
     Object.assign(methodDefinition, {
       name: fname,
       handler: descriptor.value,
-      guard: requestOptions && requestOptions.useGuard,
       path,
       method,
       requestOptions,

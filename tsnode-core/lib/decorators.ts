@@ -1,5 +1,5 @@
 import {Injector} from './injector'
-import { Injection, ResolveTypes, AbstractType } from './types';
+import { Injection, ResolveTypes, AbstractType, TypeFunction } from './types';
 
 const { 
   InjectableDecorator,
@@ -7,4 +7,4 @@ const {
 } = Injector.getInstance();
 
 export const Injectable: Injection = InjectableDecorator.bind(Injector.getInstance());
-export const Factory: <N, K extends N = N, T = unknown>(target: AbstractType<N>, factory: (opts: T) => K, resolveType?: ResolveTypes.WEAK_SCOPED | ResolveTypes.WEAK | ResolveTypes.SCOPED) => Function = FactoryDecorator.bind(Injector.getInstance());
+export const Factory: <N, K extends N = N, T = unknown>(target: AbstractType<N>, factory: (opts: T) => K, resolveType?: ResolveTypes.WEAK_SCOPED | ResolveTypes.WEAK | ResolveTypes.SCOPED) => TypeFunction<any> = FactoryDecorator.bind(Injector.getInstance());

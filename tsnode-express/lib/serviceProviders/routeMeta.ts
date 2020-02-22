@@ -1,6 +1,6 @@
 import { PathParams } from 'express-serve-static-core';
 
-import { IControllerDefinition, IMethod, IRequestOptions } from '../types';
+import { IControllerDefinition, IMethod } from '../types';
 
 export class RouteMeta<T = unknown> {
   public controllerName: string;
@@ -8,7 +8,7 @@ export class RouteMeta<T = unknown> {
   public basePath: PathParams;
   public path: string;
   public functionName: string;
-  public requestOptions: IRequestOptions<T>;
+  public requestOptions: T;
   constructor(controller: IControllerDefinition, method: IMethod<T>) {
     this.controllerName = controller.definition.name;
     this.basePath = controller.basePath;

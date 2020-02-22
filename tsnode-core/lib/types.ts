@@ -22,5 +22,7 @@ export type SetConfig = (config: ConfigProvider) => Promise<any> | any
 
 export type Resolver<T> = (type: Type<T>) => T
 
-export type Injection = (resolveType?: ResolveTypes) => Function
-export type FactoryInjection<N, K extends N = N, T = unknown> = (target: N, factory: (opts: T) => K, resolveType?: ResolveTypes.WEAK_SCOPED | ResolveTypes.WEAK | ResolveTypes.SCOPED) => Function
+export type TypeFunction<T> = (target: Type<T>) => void;
+
+export type Injection = (resolveType?: ResolveTypes) => TypeFunction<any>
+export type FactoryInjection<N, K extends N = N, T = unknown> = (target: N, factory: (opts: T) => K, resolveType?: ResolveTypes.WEAK_SCOPED | ResolveTypes.WEAK | ResolveTypes.SCOPED) => TypeFunction<any>

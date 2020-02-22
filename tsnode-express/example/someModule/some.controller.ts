@@ -9,7 +9,7 @@ import {SomeService} from './some.service';
 // import { ResolveTypes } from '@pskl/di-core/interfaces';
 import { User } from '../authModule/auth.service';
 import { RouteMeta } from '@pskl/ts-http-express';
-import { IGuard, IRequest, IRequestParams, IResponse, IHttpController } from '@pskl/ts-http-express';
+import { IGuard, IRequest, IRequestParams, IHttpController } from '@pskl/ts-http-express';
 import { HeadersProvider } from '@pskl/ts-http-express';
 import { RequestContext } from '@pskl/ts-http-express';
 // import {TestDecorator} from "../simplePlugin";
@@ -61,14 +61,13 @@ class Foo implements IGuard {
 }
 
 @Guard(Foo)
-@Controller('some')
 // @Factory<FooBar, IBar | IFoo, RequestContext>(FooBar, ({ request }) => {
 //     console.log(request.params)
 //     return request.params.factory === 'foo' ? new IFoo : new IBar
 // }, ResolveTypes.WEAK_SCOPED)
+@Controller('some')
 @Injectable(ResolveTypes.SCOPED)
-
-export class SomeController implements IHttpController {
+export class SomeController {
     public id!: string;
     constructor(
         public someService: SomeService,
@@ -151,11 +150,3 @@ export class SomeController implements IHttpController {
         return this.fooBar.get();
     }
 }
-
-// @Controller('asdadasdsadsa')
-// export class A {
-//     @Get('')
-//     baoo() {
-
-//     }
-// }

@@ -13,16 +13,15 @@ const injectedService: InjectedService = new InjectedService({
 });
 
 function setConfig(config: ConfigProvider) {
-  console.log(config)
-      config.secret = 'SUPER SECRET'
-      config.logLevels = ['info', 'success', 'error', 'warning'];
-      config.printStack = false;
-      config.port = process.env.PORT;
-      config.redisHost = process.env.REDIS_HOST;
-      config.redisPort = process.env.REDIS_PORT;
-      config.redisPassword = process.env.REDIS_PASS;
-      config.transportChannel = 'example';
-      config.test = 'test config field';
+  config.secret = 'SUPER SECRET'
+  config.logLevels = ['info', 'success', 'error', 'warning'];
+  config.printStack = false;
+  config.port = process.env.PORT;
+  config.redisHost = process.env.REDIS_HOST;
+  config.redisPort = process.env.REDIS_PORT;
+  config.redisPassword = process.env.REDIS_PASS;
+  config.transportChannel = 'example';
+  config.test = 'test config field';
 }
 
 const application = new TSHttpExpress();

@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import { Type, AbstractType } from './types';
+import { Type, AbstractType, TypeFunction } from './types';
 import { ResolveTypes } from './types';
 
 const _global = global as any;
@@ -129,13 +129,13 @@ export class Injector {
       return this.plugins.get(name);  
   }
 
-  public InjectableDecorator (resolveType: ResolveTypes = ResolveTypes.SINGLETON) : Function {
-    return (target: Type<any>) : void => {
+  public InjectableDecorator<T> (resolveType: ResolveTypes = ResolveTypes.SINGLETON) : TypeFunction<T> {
+    return (target: Type<T>) : void => {
       this.set(target, resolveType);
     }
   } 
 
-  public FactoryDecorator<N, K extends N, T>(target: AbstractType<N>, factory: (options: T) => K | Promise<K>, resolveType?: ResolveTypes.WEAK_SCOPED | ResolveTypes.WEAK | ResolveTypes.SCOPED) : Function{
+  public FactoryDecorator<N, K extends N, T>(target: AbstractType<N>, factory: (options: T) => K | Promise<K>, resolveType?: ResolveTypes.WEAK_SCOPED | ResolveTypes.WEAK | ResolveTypes.SCOPED) : TypeFunction<any> {
     return () : void => {
       this.setFactory(target, {
         factory,

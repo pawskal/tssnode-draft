@@ -46,7 +46,9 @@
     "url": "https://github.com/pawskal/tsnode-express.git/issues"
   },
   "homepage": "https://github.com/pawskal/tsnode-express#readme",
-  "dependencies": {},
+  "dependencies": {
+    "typescript": "^3.8.2"
+  },
   "devDependencies": {
     "@types/node": "^9.4.7",
     "@types/tape": "^4.2.32",
@@ -54,7 +56,6 @@
     "reflect-metadata": "^0.1.13",
     "tap-spec": "^5.0.0",
     "tape": "^4.9.0",
-    "typescript": "^3.3.3333",
     "ts-node": "^5.0.1"
   },
   "directories": {
