@@ -30,8 +30,8 @@ export class HttpMeta {
 
       controllerResolver.inject(currentContext, new RouteMeta(controllerDefinition, method))
       let instance: IHttpController;
-      res.on("finish", () => {
-        instance && typeof instance.onDestroy === 'function' && instance.onDestroy()
+      res.on("finish", async () => {
+        await instance && typeof instance.onDestroy === 'function' && instance.onDestroy()
         currentContext.finished = true;
       });
       try {
@@ -43,7 +43,7 @@ export class HttpMeta {
         instance = await controllerResolver.resolve(controllerDefinition.definition.name, currentContext);
         const requestParams = new RequestArguments(req);
         
-        typeof instance.onInit === 'function' && await instance.onInit();
+        await instance && typeof instance.onInit === 'function' && instance.onInit();
         const origin = method.handler || HttpMeta.noop;
         res.result = await origin.call(instance, requestParams) || {};
       } catch (e) {

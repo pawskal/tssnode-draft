@@ -9,26 +9,26 @@ class IOCContainer {
     return this._injector;
   }
 
-  protected _injector: Injector;
+  protected _injector: Injector = Injector.getInstance();
 
-  public configProvider: ConfigProvider;
+  public configProvider: ConfigProvider = new ConfigProvider({
+    logLevels: [],
+    printStack: false
+  });
 
   protected plugins: string[] = [];
 
   constructor() {
-    this._injector = Injector.getInstance();
-
     this._injector.setInstance(this);
-
-    this.configProvider = new ConfigProvider({
-      logLevels: [],
-      printStack: false
-    });
     this._injector.setInstance(this.configProvider);
   }
 
-  public resolve<T>(type: Type<T>):Promise< T> {
-    return this._injector._resolveTarget(type.name);
+  public resolve<T, K = unknown>(type: Type<T>, dependency: K):Promise< T> 
+  public resolve<T>(type: Type<T>):Promise< T> 
+  public resolve<T>():Promise<T> {
+    return arguments.length == 1 
+      ? this._injector._resolveTarget(arguments[0].name)
+      : this._injector._resolveTarget(arguments[0].name, arguments[1])
   }
 
   public useConfig(cb: SetConfig) : this {

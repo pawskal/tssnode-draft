@@ -65,11 +65,11 @@ export type IRoutes = {
 };
 
 export interface IOnInit {
-  onInit?(): void;
+  onInit?(): void | Promise<void>;
 }
 
 export interface IOnDestroy {
-  onDestroy?(): void;
+  onDestroy?(): void | Promise<void>;
 }
 
 export type IPropertyDescriptor = {

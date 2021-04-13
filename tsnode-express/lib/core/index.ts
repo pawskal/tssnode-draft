@@ -1,6 +1,6 @@
 import { HttpMeta } from './httpMeta';
 import { RequestArguments } from './requestArguments';
-import { RouteMeta } from '../serviceProviders/routeMeta';
+import { RouteMeta } from '../providers/routeMeta';
 
 const httpMeta = new HttpMeta();
 

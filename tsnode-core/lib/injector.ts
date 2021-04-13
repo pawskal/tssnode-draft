@@ -50,19 +50,31 @@ export class Injector {
   }
 
   private async _resolve<T>(injection: Type<T>, dependency?: unknown): Promise<T> {
-    const tokens: Array<FunctionConstructor> = Reflect.getMetadata('design:paramtypes', injection) || [];
-    const instances: Array<T> = await Promise.all(tokens.map(t => this._resolveTarget<any>(t.name, dependency)) || []);
-    return new injection(...instances)
+    var tokens: Array<FunctionConstructor> = Reflect.getMetadata('design:paramtypes', injection) || [];
+
+    try {
+      const instances: Array<T> = await Promise.all(tokens.map(t => this._resolveTarget<any>(t.name, dependency)) || []);
+      return new injection(...instances)
+    } catch (e) {
+      console.error(e)
+      console.error(`unable to resolve ${injection.name}`)
+      console.error('List injection tokens', tokens)
+      throw e
+    }
+  }
+
+  private getFactoryValue<T, K = unknown>(factoryResolver: (dependency?: K) => T | Promise<T> | Type<T> | Promise<Type<T>>, dependency?: K) {
+    const value = factoryResolver(dependency)
+    return typeof value === 'function' ? this._resolve(value as Type<T>) : value
   }
 
   public async _resolveTarget<T>(targetName: string, dependency?: unknown): Promise<T> {
-    try {
       if(this.injections.has(targetName)) {
         const { injection, resolveType } = this.injections.get(targetName)!
         if (resolveType === ResolveTypes.SINGLETON) {
           return this.getOrSetNGet(this.instances, targetName, () => this._resolve(injection))
         } 
-        if(resolveType === ResolveTypes.WEAK_SCOPED) {
+        if(resolveType === ResolveTypes.SMART_SCOPED) {
           const instances = this.getWeakInstances(dependency);
           return this.getOrSetNGet(instances!, targetName, () => this._resolve(injection, dependency))
         }
@@ -76,15 +88,20 @@ export class Injector {
 
         switch(resolveType) {
           case ResolveTypes.SINGLETON: {
-            return this.getOrSetNGet(this.instances, targetName, () => factory())
+            const item = await this.getFactoryValue(factory)
+            return this.getOrSetNGet(this.instances, targetName, () => item)
           }
-          case ResolveTypes.WEAK_SCOPED: 
+          case ResolveTypes.SCOPED: {
+            return this.getFactoryValue(factory, dependency)
+          }
+          case ResolveTypes.SMART_SCOPED:
           case ResolveTypes.WEAK: {
             const instances = this.getWeakInstances(dependency);
-            return this.getOrSetNGet(instances!, targetName, () => factory(dependency))
+            const item = await this.getFactoryValue(factory, dependency)
+            return this.getOrSetNGet(instances!, targetName, () => item)
           }
 
-          default: return factory()
+          default: throw new Error('Invalid ResolveType')
         }
       } else {
         if(this.instances.has(targetName)){
@@ -95,14 +112,11 @@ export class Injector {
           if(instances!.has(targetName)) {
             return instances!.get(targetName)
           }
-          throw new Error('foo')
+          /**Circular weak scoped instances in not allowed */
+          throw new Error(`Unable to resolve weak instance ${targetName}`)
         }
-        throw new Error('bar')
+        throw new Error(`Unable to resolve injection or factory ${targetName}`)
       }
-    } catch (e) {
-      console.error(e)
-      throw new Error(`Unable to resolve injection ${targetName}`)
-    }
   }
 
   public setWeakInstance(dependency: unknown, target: any) {
@@ -114,7 +128,7 @@ export class Injector {
     this.factoryInjections.set(target.name, options)
   }
 
-  public setInstance(target: any): void {;
+  public setInstance(target: any): void {
     this.instances.set(target.constructor.name, target);
   }
 
@@ -131,11 +145,12 @@ export class Injector {
 
   public InjectableDecorator<T> (resolveType: ResolveTypes = ResolveTypes.SINGLETON) : TypeFunction<T> {
     return (target: Type<T>) : void => {
+      console.log(target)
       this.set(target, resolveType);
     }
   } 
 
-  public FactoryDecorator<N, K extends N, T>(target: AbstractType<N>, factory: (options: T) => K | Promise<K>, resolveType?: ResolveTypes.WEAK_SCOPED | ResolveTypes.WEAK | ResolveTypes.SCOPED) : TypeFunction<any> {
+  public FactoryDecorator<N, K extends N, T>(target: AbstractType<N>, factory: (options: T) => K | Promise<K> | Type<K>, resolveType?: ResolveTypes.WEAK | ResolveTypes.SCOPED) : TypeFunction<any> {
     return () : void => {
       this.setFactory(target, {
         factory,

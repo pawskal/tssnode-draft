@@ -43,7 +43,7 @@ class TSHttpExpress extends IOCContainer {
     };
 
     this.use('/health', this.health.bind(this));
-    this.use(bodyParser.json());
+    this.use(bodyParser.json()); //???????????????????????????????????
     this.use(bodyParser.urlencoded({ extended: false }));
   }
 
@@ -56,7 +56,7 @@ class TSHttpExpress extends IOCContainer {
   }
 
   public handleError(err: ExtendedError, ...args: any[]): this;
-  public handleError(err: ExtendedError, req: IRequest, res: IResponse, next: NextFunction): this {
+  public handleError(err: ExtendedError, _req: IRequest, res: IResponse, _next: NextFunction): this {
     console.log('handleError')
     const { configProvider }: ConfigProvider = this;
     if (err.statusCode) {
@@ -91,7 +91,7 @@ class TSHttpExpress extends IOCContainer {
   protected buildController(controllerDefinition: IControllerDefinition): void {
     const { configProvider }: ConfigProvider = this;
     const guardDefinition = this.getControllerGuard(controllerDefinition)!
-    const controllerResolver = new ControllerResolver<IGuard, unknown>(this._injector, controllerDefinition, guardDefinition)
+    const controllerResolver = new ControllerResolver<IGuard, unknown>(this.injector, controllerDefinition, guardDefinition)
     const router = Router();
     const { routes, basePath = '/' } = controllerDefinition;
     new Map<string, IRoutes>([...routes.entries()]

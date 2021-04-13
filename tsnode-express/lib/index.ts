@@ -1,5 +1,5 @@
 export * from './decorators';
-export * from './serviceProviders';
+export * from './providers';
 export * from './core';
 export * from './types'
 

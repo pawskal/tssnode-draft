@@ -41,8 +41,8 @@ class GuardResult {
 @Factory<FooBar, IBar | IFoo, CurrentContext>(FooBar, ({ request }) => {
     console.log(request.params)
     return request.params.factory === 'foo' ? new IFoo : new IBar
-}, ResolveTypes.WEAK_SCOPED)
-@Injectable(ResolveTypes.WEAK_SCOPED)
+}, ResolveTypes.SMART_SCOPED)
+@Injectable(ResolveTypes.SMART_SCOPED)
 class Foo implements IGuard {
     public guardId: string = uuidv4()
     constructor(public headers: HeadersProvider, public fooBar: FooBar) {
@@ -64,7 +64,7 @@ class Foo implements IGuard {
 // @Factory<FooBar, IBar | IFoo, CurrentContext>(FooBar, ({ request }) => {
 //     console.log(request.params)
 //     return request.params.factory === 'foo' ? new IFoo : new IBar
-// }, ResolveTypes.WEAK_SCOPED)
+// }, ResolveTypes.SMART_SCOPED)
 @Controller('some')
 @Injectable(ResolveTypes.SCOPED)
 export class SomeController {
