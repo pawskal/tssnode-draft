@@ -1,7 +1,7 @@
-import {IPlugin, ConfigProvider, IOCContainer} from "../../lib";
+import IOCContainer, {IPlugin, ConfigProvider, Injectable} from "../../lib";
 import {success, warning, error, info} from 'nodejs-lite-logger';
 
-@Reflect.metadata('design', 'paramtypes')
+@Injectable()
 export class TestPlugin implements IPlugin {
 
     private _params: any;

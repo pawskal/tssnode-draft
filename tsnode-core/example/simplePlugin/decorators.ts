@@ -1,5 +1,5 @@
 import { PLUGIN_NAME } from "./index";
-import { _injector } from "../../lib";
+import { Injector } from "../../lib";
 
 
 function testDecorator(): Function {
@@ -19,4 +19,4 @@ function testDecorator(): Function {
     }
 }
 
-export const TestDecorator: Function = testDecorator.bind(_injector.getInstance());
+export const TestDecorator: Function = testDecorator.bind(Injector.getInstance());

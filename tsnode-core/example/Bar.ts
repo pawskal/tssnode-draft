@@ -1,6 +1,7 @@
-import { ResolveTypes, Injectable, ConfigProvider } from '../lib';
+import { Injectable, ConfigProvider } from '../lib';
 
-@Injectable()
+// @Injectable()
+@Reflect.metadata('design', 'paramtypes')
 export default class Bar {
   private _value: string;
   constructor(public config: ConfigProvider) { }

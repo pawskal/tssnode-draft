@@ -1,10 +1,12 @@
-import uuidv4 from 'uuidv4';
 import Baz from './Baz';
-
 import { ResolveTypes, Injectable } from '../lib';
+import IUUID from './IUUID';
 
-@Injectable(ResolveTypes.SCOPED)
-export default class Foo {
-  public id: string = uuidv4();
-  constructor(public baz: Baz) { }  
+// @Injectable(ResolveTypes.SCOPED)
+@Reflect.metadata('design', 'paramtypes')
+export default class Foo extends IUUID {
+  constructor(public baz: Baz) { 
+    super();
+    console.log(this)
+   }  
 }
